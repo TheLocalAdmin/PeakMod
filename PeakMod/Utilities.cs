@@ -1,4 +1,5 @@
-﻿using BepInEx.Logging;
+﻿using BepInEx;
+using BepInEx.Logging;
 using DearImGuiInjection.BepInEx;
 using Photon.Pun;
 using System;
@@ -39,6 +40,7 @@ public static class Utilities
             {
                 Globals.items.Clear();
                 Globals.itemNames.Clear();
+                Globals.itemPrefabNames.Clear();
                 for (int i = 0; i < 3; i++) Globals.selectedItems[i] = -1;
 
                 ItemDatabase db = ItemDatabase.Instance;
@@ -50,6 +52,7 @@ public static class Utilities
                             continue;
                         Globals.items.Add(item);
                         Globals.itemNames.Add(item.GetName());
+                        Globals.itemPrefabNames.Add(item.gameObject != null ? item.gameObject.name : item.GetName());
                     }
                 }
                 else
@@ -62,6 +65,7 @@ public static class Utilities
                         {
                             Globals.items.Add(item);
                             Globals.itemNames.Add(item.GetName());
+                            Globals.itemPrefabNames.Add(item.gameObject != null ? item.gameObject.name : item.GetName());
                         }
                     }
                 }
@@ -73,13 +77,16 @@ public static class Utilities
 
                 var sortedItems = new List<Item>();
                 var sortedNames = new List<string>();
+                var sortedPrefabs = new List<string>();
                 foreach (var entry in indexed)
                 {
                     sortedItems.Add(Globals.items[entry.idx]);
                     sortedNames.Add(entry.name);
+                    sortedPrefabs.Add(Globals.itemPrefabNames[entry.idx]);
                 }
                 Globals.items = sortedItems;
                 Globals.itemNames = sortedNames;
+                Globals.itemPrefabNames = sortedPrefabs;
 
                 Logger.LogInfo($"[PeakMod] Item list loaded: {Globals.itemNames.Count} items (via ItemDatabase).");
             }
@@ -389,14 +396,76 @@ public static class Utilities
         {
             try
             {
-                MapHandler.JumpToSegment(Globals.allSegments[segmentIndex]);
-                ConfigManager.Logger.LogInfo($"[PeakMod] Jumping to segment: {Globals.segmentNames[segmentIndex]}");
+                var segment = Globals.allSegments[segmentIndex];
+
+                try
+                {
+                    MapHandler.JumpToSegment(segment);
+                }
+                catch (Exception jumpEx)
+                {
+                    Logger.LogWarning("[PeakMod] JumpToSegment exception (map may still have switched): " + jumpEx);
+                }
+
+                WarpLocalToSegmentSpawn(segment);
+                Logger.LogInfo($"[PeakMod] Jumping to segment: {Globals.segmentNames[segmentIndex]}");
             }
             catch (Exception ex)
             {
                 ConfigManager.Logger.LogError("[PeakMod] TeleportToSegment Exception: " + ex);
             }
         });
+    }
+
+    private static void WarpLocalToSegmentSpawn(Segment segment)
+    {
+        Character localCharacter = Character.localCharacter;
+        if (localCharacter == null || localCharacter.photonView == null)
+        {
+            Logger.LogWarning("[PeakMod] No local character to warp after segment jump.");
+            return;
+        }
+
+        MapHandler mapHandler = UnityEngine.Object.FindFirstObjectByType<MapHandler>();
+        if (mapHandler == null || mapHandler.segments == null)
+        {
+            Logger.LogWarning("[PeakMod] MapHandler not found, skipping relocation warp.");
+            return;
+        }
+
+        Vector3 position;
+        int idx = (int)segment;
+        if (idx >= 5)
+            idx -= 1;
+
+        if (segment == Segment.Peak && mapHandler.respawnThePeak != null)
+        {
+            position = mapHandler.respawnThePeak.position;
+        }
+        else if (segment == Segment.Void && Peak.VoidBiome.instance != null)
+        {
+            position = Peak.VoidBiome.instance.GetSpawnPosition(0);
+        }
+        else if (idx >= 0 && idx < mapHandler.segments.Length && mapHandler.segments[idx] != null)
+        {
+            var ms = mapHandler.segments[idx];
+            GameObject campfire = null;
+            try { campfire = ms.segmentCampfire; } catch (Exception) { }
+            Transform reconnectSpawn = ms.reconnectSpawnPos;
+
+            if (campfire != null)
+                position = campfire.transform.position;
+            else if (reconnectSpawn != null)
+                position = reconnectSpawn.position;
+            else
+                position = ms.segmentParent != null ? ms.segmentParent.transform.position : Vector3.zero;
+        }
+        else
+        {
+            position = Vector3.zero;
+        }
+
+        localCharacter.photonView.RPC("WarpPlayerRPC", RpcTarget.All, new object[] { position, true });
     }
 
     public static void UnlockAllBadges()
@@ -643,6 +712,492 @@ public static class Utilities
             else
             {
                 Logger.LogWarning("[PeakMod] No valid ground to spawn.");
+            }
+        });
+    }
+
+    public static void RefreshHostStatuses()
+    {
+        try
+        {
+            if (Globals.hostStatusTypes.Count == 0)
+            {
+                foreach (CharacterAfflictions.STATUSTYPE type in Enum.GetValues(typeof(CharacterAfflictions.STATUSTYPE)))
+                {
+                    Globals.hostStatusTypes.Add((int)type);
+                    Globals.hostStatusNames.Add(type.ToString());
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("[PeakMod] RefreshHostStatuses error: " + ex);
+        }
+    }
+
+    public static void SpawnItemInHand(int itemIndex)
+    {
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                if (itemIndex < 0 || itemIndex >= Globals.itemPrefabNames.Count)
+                    return;
+                var character = Character.localCharacter;
+                if (character?.refs?.items == null)
+                {
+                    Logger.LogWarning("[PeakMod] Local items component not found.");
+                    return;
+                }
+                string prefabName = Globals.itemPrefabNames[itemIndex];
+                character.refs.items.photonView.RPC("RPC_SpawnItemInHandMaster", RpcTarget.All, new object[] { prefabName });
+                Logger.LogInfo($"[PeakMod] Spawned {Globals.itemNames[itemIndex]} in hand.");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("[PeakMod] SpawnItemInHand Exception: " + ex);
+            }
+        });
+    }
+
+    public static void SpawnItemInSelectedHand(int itemIndex)
+    {
+        if (Globals.selectedPlayer < 0 || Globals.selectedPlayer >= Globals.allPlayers.Count)
+            return;
+
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                if (itemIndex < 0 || itemIndex >= Globals.itemPrefabNames.Count)
+                    return;
+                var target = Globals.allPlayers[Globals.selectedPlayer];
+                if (target?.refs?.items == null)
+                {
+                    Logger.LogWarning("[PeakMod] Target items component not found.");
+                    return;
+                }
+                string prefabName = Globals.itemPrefabNames[itemIndex];
+                target.refs.items.photonView.RPC("RPC_SpawnItemInHandMaster", RpcTarget.All, new object[] { prefabName });
+                Logger.LogInfo($"[PeakMod] Spawned {Globals.itemNames[itemIndex]} in {Globals.playerNames[Globals.selectedPlayer]}'s hand.");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("[PeakMod] SpawnItemInSelectedHand Exception: " + ex);
+            }
+        });
+    }
+
+    public static void HostKickSelected()
+    {
+        if (Globals.selectedPlayer < 0 || Globals.selectedPlayer >= Globals.allPlayers.Count)
+            return;
+
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                var target = Globals.allPlayers[Globals.selectedPlayer];
+                var player = target?.player;
+                if (player == null)
+                {
+                    Logger.LogWarning("[PeakMod] Target player not found for kick.");
+                    return;
+                }
+                player.photonView.RPC("RPC_GetKicked", RpcTarget.All, new object[0]);
+                Logger.LogInfo($"[PeakMod] Kick RPC sent for {Globals.playerNames[Globals.selectedPlayer]} (host only).");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("[PeakMod] HostKickSelected Exception: " + ex);
+            }
+        });
+    }
+
+    public static void HostGiveStatusToSelected(CharacterAfflictions.STATUSTYPE type, float amount)
+    {
+        if (Globals.selectedPlayer < 0 || Globals.selectedPlayer >= Globals.allPlayers.Count)
+            return;
+
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                var target = Globals.allPlayers[Globals.selectedPlayer];
+                var aff = target?.refs?.afflictions;
+                if (aff == null)
+                {
+                    Logger.LogWarning("[PeakMod] Target afflictions not found.");
+                    return;
+                }
+
+                int index = (int)type;
+                int count = Enum.GetValues(typeof(CharacterAfflictions.STATUSTYPE)).Length;
+                float[] statuses = new float[count];
+                for (int i = 0; i < count; i++)
+                    statuses[i] = aff.GetCurrentStatus((CharacterAfflictions.STATUSTYPE)i);
+                statuses[index] += amount;
+
+                target.photonView.RPC("RPC_ApplyStatusesFromFloatArray", RpcTarget.All, new object[] { statuses });
+                Logger.LogInfo($"[PeakMod] Host gave {Globals.playerNames[Globals.selectedPlayer]} {amount} of {type}.");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("[PeakMod] HostGiveStatusToSelected Exception: " + ex);
+            }
+        });
+    }
+
+    public static void HostRemoveSlotSelected(int slotIndex)
+    {
+        if (Globals.selectedPlayer < 0 || Globals.selectedPlayer >= Globals.allPlayers.Count)
+            return;
+
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                var target = Globals.allPlayers[Globals.selectedPlayer];
+                var player = target?.player;
+                if (player == null)
+                {
+                    Logger.LogWarning("[PeakMod] Target player not found for slot removal.");
+                    return;
+                }
+                player.photonView.RPC("RPCRemoveItemFromSlot", RpcTarget.All, new object[] { (byte)slotIndex });
+                Logger.LogInfo($"[PeakMod] Remove-slot RPC sent for {Globals.playerNames[Globals.selectedPlayer]} (host only), slot {slotIndex}.");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("[PeakMod] HostRemoveSlotSelected Exception: " + ex);
+            }
+        });
+    }
+
+    public static void HostPassOutSelected()
+    {
+        if (Globals.selectedPlayer < 0 || Globals.selectedPlayer >= Globals.allPlayers.Count)
+            return;
+
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                var target = Globals.allPlayers[Globals.selectedPlayer];
+                if (target == null)
+                {
+                    Logger.LogWarning("[PeakMod] Target character not found for pass out.");
+                    return;
+                }
+                target.photonView.RPC("RPCA_PassOut", RpcTarget.All, new object[0]);
+                Logger.LogInfo($"[PeakMod] Pass-out RPC sent for {Globals.playerNames[Globals.selectedPlayer]} (host only).");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("[PeakMod] HostPassOutSelected Exception: " + ex);
+            }
+        });
+    }
+
+    public static void HostZombifySelected()
+    {
+        if (Globals.selectedPlayer < 0 || Globals.selectedPlayer >= Globals.allPlayers.Count)
+            return;
+
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                var target = Globals.allPlayers[Globals.selectedPlayer];
+                if (target == null)
+                {
+                    Logger.LogWarning("[PeakMod] Target character not found for zombify.");
+                    return;
+                }
+                target.photonView.RPC("RPCA_Zombify", RpcTarget.All, new object[0]);
+                Logger.LogInfo($"[PeakMod] Zombify RPC sent for {Globals.playerNames[Globals.selectedPlayer]} (host only).");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("[PeakMod] HostZombifySelected Exception: " + ex);
+            }
+        });
+    }
+
+    public static void HostAddToBackpackSelected(int inventorySlot, int backpackSlot)
+    {
+        if (Globals.selectedPlayer < 0 || Globals.selectedPlayer >= Globals.allPlayers.Count)
+            return;
+
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                var target = Globals.allPlayers[Globals.selectedPlayer];
+                var player = target?.player;
+                if (player == null)
+                {
+                    Logger.LogWarning("[PeakMod] Target player not found for backpack add.");
+                    return;
+                }
+                player.photonView.RPC("RPCAddItemToCharacterBackpack", RpcTarget.All, new object[] { player.photonView, (byte)inventorySlot, (byte)backpackSlot });
+                Logger.LogInfo($"[PeakMod] Backpack-add RPC sent for {Globals.playerNames[Globals.selectedPlayer]} (host only), slot {inventorySlot} -> pocket {backpackSlot}.");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("[PeakMod] HostAddToBackpackSelected Exception: " + ex);
+            }
+        });
+    }
+
+    public static void HostFillSelectedSlot(int slotIndex, int itemIndex)
+    {
+        if (Globals.selectedPlayer < 0 || Globals.selectedPlayer >= Globals.allPlayers.Count)
+            return;
+
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                var target = Globals.allPlayers[Globals.selectedPlayer];
+                var aff = target?.refs;
+                var items = aff?.items;
+                var player = target?.player;
+                if (player == null || items == null)
+                {
+                    Logger.LogWarning("[PeakMod] Target player or items not found for slot fill.");
+                    return;
+                }
+                if (itemIndex < 0 || itemIndex >= Globals.items.Count)
+                    return;
+
+                var slotData = player.itemSlots != null && slotIndex >= 0 && slotIndex < player.itemSlots.Length
+                    ? player.itemSlots[slotIndex]
+                    : null;
+                if (slotData == null)
+                {
+                    Logger.LogWarning("[PeakMod] Slot not found on target.");
+                    return;
+                }
+
+                Item prefab = Globals.items[itemIndex];
+                slotData.SetItem(prefab, new ItemInstanceData(Guid.NewGuid()));
+                ItemInstanceDataHandler.AddInstanceData(slotData.data);
+
+                byte[] syncData = IBinarySerializable.ToManagedArray<InventorySyncData>(
+                    new InventorySyncData(player.itemSlots, player.backpackSlot, player.tempFullSlot)
+                );
+
+                player.photonView.RPC("SyncInventoryRPC", RpcTarget.Others, new object[] { syncData, true });
+                Logger.LogInfo($"[PeakMod] Host filled slot {slotIndex} for {Globals.playerNames[Globals.selectedPlayer]} with {Globals.itemNames[itemIndex]}.");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("[PeakMod] HostFillSelectedSlot Exception: " + ex);
+            }
+        });
+    }
+
+    private static string profilePath = System.IO.Path.Combine(Paths.ConfigPath, "PeakModPlayerProfile.json");
+
+    public static void SavePlayerProfile()
+    {
+        try
+        {
+            var data = new System.Text.StringBuilder();
+            data.Append("{");
+            AppendProfileFile(data, "InfiniteStamina", ConfigManager.InfiniteStamina.Value);
+            AppendProfileFile(data, "LockStatus", ConfigManager.LockStatus.Value);
+            AppendProfileFile(data, "NoWeight", ConfigManager.NoWeight.Value);
+            AppendProfileFile(data, "NoFog", ConfigManager.NoFog.Value);
+            AppendProfileFile(data, "UnlimitedItemUses", ConfigManager.UnlimitedItemUses.Value);
+            AppendProfileFile(data, "SpeedMod", ConfigManager.SpeedMod.Value);
+            AppendProfileFile(data, "SpeedAmount", ConfigManager.SpeedAmount.Value);
+            AppendProfileFile(data, "JumpMod", ConfigManager.JumpMod.Value);
+            AppendProfileFile(data, "JumpAmount", ConfigManager.JumpAmount.Value);
+            AppendProfileFile(data, "NoFallDmg", ConfigManager.NoFallDmg.Value);
+            AppendProfileFile(data, "ClimbMod", ConfigManager.ClimbMod.Value);
+            AppendProfileFile(data, "ClimbAmount", ConfigManager.ClimbAmount.Value);
+            AppendProfileFile(data, "VineClimbMod", ConfigManager.VineClimbMod.Value);
+            AppendProfileFile(data, "VineClimbAmount", ConfigManager.VineClimbAmount.Value);
+            AppendProfileFile(data, "RopeClimbMod", ConfigManager.RopeClimbMod.Value);
+            AppendProfileFile(data, "RopeClimbAmount", ConfigManager.RopeClimbAmount.Value);
+            AppendProfileFile(data, "TeleportToPing", ConfigManager.TeleportToPing.Value);
+            AppendProfileFile(data, "FlyMod", ConfigManager.FlyMod.Value);
+            AppendProfileFile(data, "FlySpeed", ConfigManager.FlySpeed.Value);
+            AppendProfileFile(data, "FlyAcceleration", ConfigManager.FlyAcceleration.Value);
+            AppendProfileFile(data, "NoEat", ConfigManager.NoEat.Value);
+            AppendProfileFile(data, "NoInjury", ConfigManager.NoInjury.Value);
+            AppendProfileFile(data, "NoCold", ConfigManager.NoCold.Value);
+            AppendProfileFile(data, "NoPoison", ConfigManager.NoPoison.Value);
+            AppendProfileFile(data, "NoHot", ConfigManager.NoHot.Value);
+            AppendProfileFile(data, "NoCurse", ConfigManager.NoCurse.Value);
+            AppendProfileFile(data, "NoDrowsy", ConfigManager.NoDrowsy.Value);
+            AppendProfileFile(data, "NoSpores", ConfigManager.NoSpores.Value);
+            AppendProfileFile(data, "NoPetrify", ConfigManager.NoPetrify.Value);
+            AppendProfileFile(data, "NoRagdoll", ConfigManager.NoRagdoll.Value);
+
+            if (data.Length > 1 && data[data.Length - 1] == ',')
+                data.Length -= 1;
+
+            data.Append("}");
+
+            System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(profilePath));
+            System.IO.File.WriteAllText(profilePath, data.ToString());
+            Logger.LogInfo($"[PeakMod] Player profile saved to {profilePath}");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("[PeakMod] SavePlayerProfile Exception: " + ex);
+        }
+    }
+
+    public static void LoadPlayerProfile()
+    {
+        try
+        {
+            if (!System.IO.File.Exists(profilePath))
+            {
+                Logger.LogWarning("[PeakMod] No profile file found to load.");
+                return;
+            }
+
+            string json = System.IO.File.ReadAllText(profilePath);
+            System.Collections.Generic.Dictionary<string, string> map = new System.Collections.Generic.Dictionary<string, string>();
+            foreach (var part in json.Trim('{', '}').Split(','))
+            {
+                if (string.IsNullOrEmpty(part))
+                    continue;
+                int eq = part.IndexOf(':');
+                if (eq <= 0)
+                    continue;
+                string key = part.Substring(0, eq).Trim().Trim('"');
+                string val = part.Substring(eq + 1).Trim().Trim('"');
+                map[key] = val;
+            }
+
+            ApplyProfileBool(map, "InfiniteStamina", ConfigManager.InfiniteStamina);
+            ApplyProfileBool(map, "LockStatus", ConfigManager.LockStatus);
+            ApplyProfileBool(map, "NoWeight", ConfigManager.NoWeight);
+            ApplyProfileBool(map, "NoFog", ConfigManager.NoFog);
+            ApplyProfileBool(map, "UnlimitedItemUses", ConfigManager.UnlimitedItemUses);
+            ApplyProfileBool(map, "SpeedMod", ConfigManager.SpeedMod);
+            ApplyProfileFloat(map, "SpeedAmount", ConfigManager.SpeedAmount);
+            ApplyProfileBool(map, "JumpMod", ConfigManager.JumpMod);
+            ApplyProfileFloat(map, "JumpAmount", ConfigManager.JumpAmount);
+            ApplyProfileBool(map, "NoFallDmg", ConfigManager.NoFallDmg);
+            ApplyProfileBool(map, "ClimbMod", ConfigManager.ClimbMod);
+            ApplyProfileFloat(map, "ClimbAmount", ConfigManager.ClimbAmount);
+            ApplyProfileBool(map, "VineClimbMod", ConfigManager.VineClimbMod);
+            ApplyProfileFloat(map, "VineClimbAmount", ConfigManager.VineClimbAmount);
+            ApplyProfileBool(map, "RopeClimbMod", ConfigManager.RopeClimbMod);
+            ApplyProfileFloat(map, "RopeClimbAmount", ConfigManager.RopeClimbAmount);
+            ApplyProfileBool(map, "TeleportToPing", ConfigManager.TeleportToPing);
+            ApplyProfileBool(map, "FlyMod", ConfigManager.FlyMod);
+            ApplyProfileFloat(map, "FlySpeed", ConfigManager.FlySpeed);
+            ApplyProfileFloat(map, "FlyAcceleration", ConfigManager.FlyAcceleration);
+            ApplyProfileBool(map, "NoEat", ConfigManager.NoEat);
+            ApplyProfileBool(map, "NoInjury", ConfigManager.NoInjury);
+            ApplyProfileBool(map, "NoCold", ConfigManager.NoCold);
+            ApplyProfileBool(map, "NoPoison", ConfigManager.NoPoison);
+            ApplyProfileBool(map, "NoHot", ConfigManager.NoHot);
+            ApplyProfileBool(map, "NoCurse", ConfigManager.NoCurse);
+            ApplyProfileBool(map, "NoDrowsy", ConfigManager.NoDrowsy);
+            ApplyProfileBool(map, "NoSpores", ConfigManager.NoSpores);
+            ApplyProfileBool(map, "NoPetrify", ConfigManager.NoPetrify);
+            ApplyProfileBool(map, "NoRagdoll", ConfigManager.NoRagdoll);
+
+            Utilities.ApplyLoadedPlayerSettings();
+            Logger.LogInfo("[PeakMod] Player profile loaded.");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("[PeakMod] LoadPlayerProfile Exception: " + ex);
+        }
+    }
+
+    private static void AppendProfileFile(System.Text.StringBuilder sb, string key, bool value)
+    {
+        sb.Append("\"").Append(key).Append("\":").Append(value ? "true" : "false").Append(",");
+    }
+
+    private static void AppendProfileFile(System.Text.StringBuilder sb, string key, float value)
+    {
+        sb.Append("\"").Append(key).Append("\":").Append(value.ToString(System.Globalization.CultureInfo.InvariantCulture)).Append(",");
+    }
+
+    private static void ApplyProfileBool(Dictionary<string, string> map, string key, BepInEx.Configuration.ConfigEntry<bool> entry)
+    {
+        string raw;
+        if (map.TryGetValue(key, out raw))
+        {
+            bool parsed;
+            if (bool.TryParse(raw, out parsed))
+                entry.Value = parsed;
+        }
+    }
+
+    private static void ApplyProfileFloat(Dictionary<string, string> map, string key, BepInEx.Configuration.ConfigEntry<float> entry)
+    {
+        string raw;
+        if (map.TryGetValue(key, out raw))
+        {
+            float parsed;
+            if (float.TryParse(raw, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out parsed))
+                entry.Value = parsed;
+        }
+    }
+
+    public static void ApplyLoadedPlayerSettings()
+    {
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                var character = GameHelpers.GetCharacterComponent();
+                if (character == null)
+                    return;
+
+                var infiniteProp = ConstantFields.GetInfiniteStaminaProperty();
+                if (infiniteProp != null)
+                    infiniteProp.SetValue(character, ConfigManager.InfiniteStamina.Value);
+
+                var lockProp = ConstantFields.GetStatusLockProperty();
+                if (lockProp != null)
+                    lockProp.SetValue(character, ConfigManager.LockStatus.Value);
+
+                var movement = GameHelpers.GetMovementComponent();
+                var speedField = ConstantFields.GetMovementModifierField();
+                if (movement != null && speedField != null)
+                    speedField.SetValue(movement, ConfigManager.SpeedMod.Value ? ConfigManager.SpeedAmount.Value : 1f);
+
+                var jumpField = ConstantFields.GetJumpGravityField();
+                var fallField = ConstantFields.GetFallDamageTimeField();
+                if (movement != null && jumpField != null)
+                    jumpField.SetValue(movement, ConfigManager.JumpMod.Value ? ConfigManager.JumpAmount.Value : 10f);
+                if (movement != null && fallField != null)
+                    fallField.SetValue(movement, ConfigManager.NoFallDmg.Value ? 999f : 1.5f);
+
+                var climb = GameHelpers.GetClimbingComponent();
+                var climbField = ConstantFields.GetClimbSpeedModField();
+                if (climb != null && climbField != null)
+                    climbField.SetValue(climb, ConfigManager.ClimbMod.Value ? ConfigManager.ClimbAmount.Value : 1f);
+
+                var vine = GameHelpers.GetVineClimbComponent();
+                var vineField = ConstantFields.GetVineClimbSpeedModField();
+                if (vine != null && vineField != null)
+                    vineField.SetValue(vine, ConfigManager.VineClimbMod.Value ? ConfigManager.VineClimbAmount.Value : 1f);
+
+                var rope = GameHelpers.GetRopeClimbComponent();
+                var ropeField = ConstantFields.GetRopeClimbSpeedModField();
+                if (rope != null && ropeField != null)
+                    ropeField.SetValue(rope, ConfigManager.RopeClimbMod.Value ? ConfigManager.RopeClimbAmount.Value : 1f);
+
+                FlyPatch.SetFlying(ConfigManager.FlyMod.Value);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("[PeakMod] ApplyLoadedPlayerSettings Exception: " + ex);
             }
         });
     }

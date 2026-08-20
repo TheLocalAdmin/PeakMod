@@ -167,6 +167,34 @@ public class Patch_UnlimitedUses
     }
 }
 
+[HarmonyPatch(typeof(Item), "CanUsePrimary")]
+public class Patch_UnlimitedUsesPrimary
+{
+    static bool Prefix(ref bool __result)
+    {
+        if (ConfigManager.UnlimitedItemUses.Value)
+        {
+            __result = true;
+            return false;
+        }
+        return true;
+    }
+}
+
+[HarmonyPatch(typeof(Item), "CanUseSecondary")]
+public class Patch_UnlimitedUsesSecondary
+{
+    static bool Prefix(ref bool __result)
+    {
+        if (ConfigManager.UnlimitedItemUses.Value)
+        {
+            __result = true;
+            return false;
+        }
+        return true;
+    }
+}
+
 [HarmonyPatch(typeof(Fog), "ApplyVisuals")]
 public class Patch_NoFog
 {

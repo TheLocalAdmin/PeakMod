@@ -53,6 +53,9 @@ public static class ConfigManager
     // Teleport
     public static ConfigEntry<bool> TeleportToPing;
 
+    // Markers
+    public static ConfigEntry<bool> ShowPlayerMarkers;
+
     public static void Init(ConfigFile config, ManualLogSource logger)
     {
         Logger = logger;
@@ -82,6 +85,7 @@ public static class ConfigManager
         // Cheats
         UnlimitedItemUses = config.Bind("Cheats", "UnlimitedItemUses", false, "Items never lose uses.");
         NoFog = config.Bind("Cheats", "NoFog", false, "Removes the in-world fog.");
+        ShowPlayerMarkers = config.Bind("Cheats", "ShowPlayerMarkers", true, "Shows on-screen markers with distance for every player.");
 
         // Character Toggles
         SpeedMod = config.Bind("Character", "SpeedMod", false);

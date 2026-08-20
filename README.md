@@ -1,4 +1,4 @@
-# PeakMod V0.1
+# PeakMod V0.1.1
 
 A feature-rich quality-of-life and utility mod for **PEAK (v2.2.a)** built on BepInEx. PeakMod adds player enhancements, inventory tools, stage teleportation, badge unlocking, world manipulation, and lobby control in a clean Fullblack ImGui interface.
 
@@ -38,10 +38,13 @@ Everything here is open source so you can build the DLL yourself and verify exac
 
 - **Player** - Infinite stamina, freeze afflictions, no-weight, no-fog, unlimited item uses, no-status toggles (eat/injury/cold/poison/curse/hot/spores/petrify/etc.) grouped in a "Statuses" dropdown, speed/jump/climb/rope/vine/fly modifiers, no fall damage, teleport to ping, custom teleportation.
 - **Items** - Real-time inventory slot editing (assign any item), recharge item charges, searchable item list.
+- **Spawn** - Spawn any item into any player's hand (works as a non-host via client-legal RPCs).
 - **Lobby** - Player list, revive/kill selected, warp to / warp to me, spawn Scoutmaster for a player (host only).
 - **World** - Find and interact with nearby containers/luggage (auto-refreshing), open all nearby containers, warp to luggage.
-- **Stages** - Teleport to any mountain stage, from Beach to Peak.
+- **Stages** - Teleport to any mountain stage, from Beach to Peak. Alpine and Peak teleports drop you in the air near the spawn point.
 - **Achievements** - Unlock all badges and grant ascent levels.
+- **Host** - Master-client-only actions: kick a player, give any status to a player, remove/fill inventory slots, pass out, zombify, and move items to a player's backpack. These only work when you are the session host.
+- **Profile** - Save/load all of your PLAYER tab options to `BepInEx/config/PeakModPlayerProfile.json`. Only PLAYER options are stored.
 
 ## Controls / Usage
 
@@ -50,7 +53,7 @@ Everything here is open source so you can build the DLL yourself and verify exac
   2. Open `BepInEx\config\iDeathHD.DearImGuiInjection.cfg`.
   3. Under `[Keybinds]`, change the line `CursorVisibility = Z` to your preferred key (e.g. `CursorVisibility = N`, `CursorVisibility = Insert`). Use any value from the acceptable-keys list in that file.
   4. Save the file and launch the game.
-- Host-related actions (spawn Scoutmaster, etc.) only work if you are the host/MasterClient — the game enforces this on the RPC layer.
+- Host-related actions (spawn Scoutmaster, kick, status-giving, slot editing, pass-out, zombify, backpack control) only work if you are the host/MasterClient — the game enforces this on the RPC layer. Everything else works as a non-host.
 
 ## Building
 

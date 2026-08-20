@@ -12,7 +12,7 @@ using Photon.Pun;
 using System.Collections.Generic;
 
 [BepInDependency(DearImGuiInjection.Metadata.GUID)]
-[BepInPlugin("com.thelocaladmin.peakmod", "PeakMod V0.1 by TheLocalAdmin", "0.1")]
+[BepInPlugin("com.thelocaladmin.peakmod", "PeakMod V0.1.1 by TheLocalAdmin", "0.1.1")]
 
 public class PeakMod : BaseUnityPlugin
 {
@@ -87,7 +87,7 @@ public class PeakMod : BaseUnityPlugin
     }
     private void Awake()
     {
-        Logger.LogInfo("PeakMod V0.1 by TheLocalAdmin - Mod Initialized");
+        Logger.LogInfo("PeakMod V0.1.1 by TheLocalAdmin - Mod Initialized");
         this.gameObject.AddComponent<EventComponent>();
     }
 
@@ -98,6 +98,7 @@ public class PeakMod : BaseUnityPlugin
         Globals.itemSearchBuffers = new string[3] { "", "", "" };
         ConfigManager.Init(Config, Logger);
         DearImGuiInjection.DearImGuiInjection.Render += MyUI;
+        DearImGuiInjection.DearImGuiInjection.Render += DrawPlayerMarkers;
 
         // Initialize Harmony
         var harmony = new Harmony("com.thelocaladmin.peakmod");
@@ -109,6 +110,66 @@ public class PeakMod : BaseUnityPlugin
     {
         Logger.LogInfo("[PeakMod] OnDisable called");
         DearImGuiInjection.DearImGuiInjection.Render -= MyUI;
+        DearImGuiInjection.DearImGuiInjection.Render -= DrawPlayerMarkers;
+    }
+
+    private void DrawPlayerMarkers()
+    {
+        try
+        {
+            if (!ConfigManager.ShowPlayerMarkers.Value)
+                return;
+
+            Camera cam = Camera.main;
+            if (cam == null)
+                return;
+
+            Character local = Character.localCharacter;
+            if (local == null)
+                return;
+
+            if (Globals.allPlayers.Count == 0)
+                Utilities.RefreshPlayerList();
+
+            var drawList = ImGui.GetBackgroundDrawList();
+            var display = ImGui.GetIO().DisplaySize;
+
+            for (int i = 0; i < Globals.allPlayers.Count; i++)
+            {
+                Character other = Globals.allPlayers[i];
+                if (other == null || other == local)
+                    continue;
+
+                if (other.Ghost != null)
+                    continue;
+
+                Vector3 head;
+                try { head = other.Head; } catch { continue; }
+
+                Vector3 screen = cam.WorldToScreenPoint(head);
+                if (screen.z < 0f)
+                    continue;
+
+                float distance = Vector3.Distance(local.Head, head);
+                string name = "Player";
+                try { name = other.characterName; } catch { }
+
+                string label = $"{name} - {distance:F0}m";
+                var pos = new System.Numerics.Vector2(screen.x, display.Y - screen.y);
+
+                uint col = 0xFFF2B207;
+                System.Numerics.Vector2 textSize = ImGui.CalcTextSize(label);
+                drawList.AddRectFilled(
+                    new System.Numerics.Vector2(pos.X - 2f, pos.Y - 15f),
+                    new System.Numerics.Vector2(pos.X + textSize.X + 4f, pos.Y + textSize.Y - 2f),
+                    0xA0000000);
+                drawList.AddText(pos, col, label);
+            }
+        }
+        catch (Exception ex)
+        {
+            ConfigManager.Logger.LogError("[PeakMod] DrawPlayerMarkers Exception: " + ex);
+        }
     }
 
     void DrawCheckbox(ConfigEntry<bool> config, string label, Action<bool> mainThreadAction = null)
@@ -218,12 +279,12 @@ public class PeakMod : BaseUnityPlugin
             ImGui.SetNextWindowPos(new System.Numerics.Vector2(20, 20), ImGuiCond.Once);
             ImGui.SetNextWindowSize(new System.Numerics.Vector2(540, 340), ImGuiCond.Once);
 
-            if (ImGui.Begin("PeakMod V0.1 by TheLocalAdmin##Main", ImGuiWindowFlags.NoCollapse))
+            if (ImGui.Begin("PeakMod V0.1.1 by TheLocalAdmin##Main", ImGuiWindowFlags.NoCollapse))
             {
                 // Sidebar
                 ImGui.BeginChild("Sidebar", new System.Numerics.Vector2(90, 0), true);
                 ImGui.Dummy(new System.Numerics.Vector2(4, 2));
-                string[] sidebarItems = { "PLAYER", "ITEMS", "LOBBY", "WORLD", "STAGES", "ACHIEVE", "ABOUT" };
+                string[] sidebarItems = { "PLAYER", "ITEMS", "SPAWN", "LOBBY", "WORLD", "STAGES", "ACHIEVE", "HOST", "PROFILE", "ABOUT" };
                 for (int i = 0; i < sidebarItems.Length; i++)
                 {
                     bool isSelected = (selectedTab == i + 1);
@@ -355,6 +416,10 @@ public class PeakMod : BaseUnityPlugin
                         DrawCheckbox(ConfigManager.FlyMod, "Fly Mode", FlyPatch.SetFlying);
                         ImGui.SameLine();
                         DrawToolTip("Allows free movement in all directions while ignoring gravity.");
+
+                        DrawCheckbox(ConfigManager.ShowPlayerMarkers, "Show Player Markers");
+                        ImGui.SameLine();
+                        DrawToolTip("Draws markers with the name and distance of every nearby player on your screen.");
                     }
                     ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
                     if (ImGui.CollapsingHeader("Teleport##PlayerTeleport", ImGuiTreeNodeFlags.DefaultOpen))
@@ -540,8 +605,78 @@ public class PeakMod : BaseUnityPlugin
 
                     ImGui.Unindent();
                 }
-                // Lobby
+                // Spawn
                 else if (selectedTab == 3)
+                {
+                    if (Globals.itemNames.Count == 0)
+                    {
+                        Utilities.UpdateItems();
+                    }
+
+                    if (Globals.allPlayers.Count == 0)
+                    {
+                        Utilities.RefreshPlayerList();
+                    }
+
+                    ImGui.Indent(4.0f);
+                    ImGui.Dummy(new System.Numerics.Vector2(4, 2));
+
+                    // Target selector
+                    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
+                    if (ImGui.BeginCombo("Spawn Target", Globals.selectedPlayer >= 0 && Globals.selectedPlayer < Globals.playerNames.Count
+                        ? Globals.playerNames[Globals.selectedPlayer]
+                        : "None"))
+                    {
+                        for (int i = 0; i < Globals.playerNames.Count; i++)
+                        {
+                            bool isSel = Globals.selectedPlayer == i;
+                            if (ImGui.Selectable(Globals.playerNames[i], isSel))
+                            {
+                                Globals.selectedPlayer = i;
+                            }
+                        }
+                        ImGui.EndCombo();
+                    }
+                    DrawToolTip("Whose hand the item will be spawned into. Works for any player as a non-host.");
+
+                    // Item picker
+                    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
+                    if (ImGui.BeginCombo("Item to Spawn", Globals.selectedSpawnItem >= 0 && Globals.selectedSpawnItem < Globals.itemNames.Count
+                        ? Globals.itemNames[Globals.selectedSpawnItem]
+                        : "None"))
+                    {
+                        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
+                        ImGui.InputText("##spawn_item_search", ref Globals.spawnItemSearch, 64);
+                        for (int i = 0; i < Globals.itemNames.Count; i++)
+                        {
+                            if (!string.IsNullOrEmpty(Globals.spawnItemSearch) &&
+                                Globals.itemNames[i].IndexOf(Globals.spawnItemSearch, System.StringComparison.OrdinalIgnoreCase) < 0)
+                                continue;
+                            bool isSel = Globals.selectedSpawnItem == i;
+                            if (ImGui.Selectable(Globals.itemNames[i], isSel))
+                            {
+                                Globals.selectedSpawnItem = i;
+                            }
+                        }
+                        ImGui.EndCombo();
+                    }
+
+                    ImGui.Dummy(new System.Numerics.Vector2(4, 4));
+
+                    if (ImGui.Button("Spawn In Own Hand"))
+                    {
+                        Utilities.SpawnItemInHand(Globals.selectedSpawnItem);
+                    }
+                    DrawToolTip("Spawns the selected item into YOUR hand (any client).");
+
+                    if (ImGui.Button("Spawn In Selected Hand"))
+                    {
+                        Utilities.SpawnItemInSelectedHand(Globals.selectedSpawnItem);
+                    }
+                    DrawToolTip("Spawns the selected item into the selected player's hand (any client).");
+                }
+                // Lobby
+                else if (selectedTab == 4)
                 {
                     float fullWidth = ImGui.GetContentRegionAvail().X;
                     float halfWidth = fullWidth / 2f;
@@ -650,7 +785,7 @@ public class PeakMod : BaseUnityPlugin
                     ImGui.EndChild();
                 }
                 // World
-                else if (selectedTab == 4)
+                else if (selectedTab == 5)
                 {
                     float fullWidth = ImGui.GetContentRegionAvail().X;
                     float halfWidth = fullWidth / 2f;
@@ -753,7 +888,7 @@ public class PeakMod : BaseUnityPlugin
                     ImGui.EndChild();
                 }
                 // Stages
-                else if (selectedTab == 5)
+                else if (selectedTab == 6)
                 {
                     ImGui.Indent(4.0f);
                     ImGui.Dummy(new System.Numerics.Vector2(4, 2));
@@ -795,6 +930,13 @@ public class PeakMod : BaseUnityPlugin
                         ImGui.SameLine();
                         DrawToolTip("Teleports all players (including you) to the selected mountain stage.");
 
+                        if (Globals.selectedSegmentIndex == 2 || Globals.selectedSegmentIndex == 5)
+                        {
+                            ImGui.PushStyleColor(ImGuiCol.Text, new System.Numerics.Vector4(1.0f, 0.75f, 0.15f, 1.0f));
+                            ImGui.TextWrapped("[!] NOTE: Alpine and Peak teleports drop you in the air near the spawn point. Turn on Fly Mode in the PLAYER tab if you get stuck.");
+                            ImGui.PopStyleColor();
+                        }
+
                         ImGui.Dummy(new System.Numerics.Vector2(4, 4));
                         ImGui.Separator();
 
@@ -812,7 +954,7 @@ public class PeakMod : BaseUnityPlugin
                     ImGui.Unindent();
                 }
                 // Achievements
-                else if (selectedTab == 6)
+                else if (selectedTab == 7)
                 {
                     ImGui.Indent(4.0f);
                     ImGui.Dummy(new System.Numerics.Vector2(4, 2));
@@ -888,15 +1030,192 @@ public class PeakMod : BaseUnityPlugin
 
                     ImGui.Unindent();
                 }
-                // About
-                else if (selectedTab == 7)
+                // Host Only
+                else if (selectedTab == 8)
+                {
+                    if (Globals.allPlayers.Count == 0)
+                    {
+                        Utilities.RefreshPlayerList();
+                    }
+
+                    if (Globals.hostStatusNames.Count == 0)
+                    {
+                        Utilities.RefreshHostStatuses();
+                    }
+
+                    ImGui.Indent(4.0f);
+                    ImGui.Dummy(new System.Numerics.Vector2(4, 2));
+
+                    ImGui.TextWrapped("These actions only work when YOU are the session host (master client). They use server-gated RPCs.");
+                    ImGui.Spacing();
+
+                    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
+                    if (ImGui.BeginCombo("Host Target", Globals.selectedPlayer >= 0 && Globals.selectedPlayer < Globals.playerNames.Count
+                        ? Globals.playerNames[Globals.selectedPlayer]
+                        : "None"))
+                    {
+                        for (int i = 0; i < Globals.playerNames.Count; i++)
+                        {
+                            bool isSel = Globals.selectedPlayer == i;
+                            if (ImGui.Selectable(Globals.playerNames[i], isSel))
+                            {
+                                Globals.selectedPlayer = i;
+                            }
+                        }
+                        ImGui.EndCombo();
+                    }
+
+                    ImGui.Dummy(new System.Numerics.Vector2(4, 4));
+
+                    if (ImGui.Button("Kick Selected Player"))
+                    {
+                        Utilities.HostKickSelected();
+                    }
+                    DrawToolTip("Kicks the selected player from the session (host only).");
+
+                    ImGui.Separator();
+                    ImGui.Text("Give Status (Host)");
+
+                    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
+                    if (ImGui.BeginCombo("Status Type", Globals.selectedHostStatusIndex >= 0 && Globals.selectedHostStatusIndex < Globals.hostStatusNames.Count
+                        ? Globals.hostStatusNames[Globals.selectedHostStatusIndex]
+                        : "None"))
+                    {
+                        for (int i = 0; i < Globals.hostStatusNames.Count; i++)
+                        {
+                            bool isSel = Globals.selectedHostStatusIndex == i;
+                            if (ImGui.Selectable(Globals.hostStatusNames[i], isSel))
+                            {
+                                Globals.selectedHostStatusIndex = i;
+                            }
+                        }
+                        ImGui.EndCombo();
+                    }
+
+                    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
+                    float amt = Globals.hostStatusAmount;
+                    if (ImGui.InputFloat("##host_status_amount", ref amt, 1f, 5f, "%.1f"))
+                        Globals.hostStatusAmount = amt;
+                    ImGui.SameLine();
+                    DrawToolTip("Amount of the status to add to the target.");
+
+                    if (ImGui.Button("Give Status To Selected"))
+                    {
+                        Utilities.HostGiveStatusToSelected(
+                            (CharacterAfflictions.STATUSTYPE)Globals.hostStatusTypes[Globals.selectedHostStatusIndex],
+                            Globals.hostStatusAmount);
+                    }
+
+                    ImGui.Separator();
+                    ImGui.Text("Remove Slot (Host)");
+
+                    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
+                    int slotIdx = Globals.hostRemoveSlot;
+                    if (ImGui.SliderInt("##host_remove_slot", ref slotIdx, 0, 8, "Slot: %d"))
+                        Globals.hostRemoveSlot = slotIdx;
+
+                    if (ImGui.Button("Remove Item From Slot"))
+                    {
+                        Utilities.HostRemoveSlotSelected(Globals.hostRemoveSlot);
+                    }
+                    DrawToolTip("Removes the item in the chosen slot from the selected player's inventory (host only).");
+
+                    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
+                    int itemIdx2 = Globals.selectedSpawnItem;
+                    if (ImGui.BeginCombo("Item to Place", itemIdx2 >= 0 && itemIdx2 < Globals.itemNames.Count
+                        ? Globals.itemNames[itemIdx2]
+                        : "None"))
+                    {
+                        for (int i = 0; i < Globals.itemNames.Count; i++)
+                        {
+                            bool isSel = itemIdx2 == i;
+                            if (ImGui.Selectable(Globals.itemNames[i], isSel))
+                            {
+                                Globals.selectedSpawnItem = i;
+                            }
+                        }
+                        ImGui.EndCombo();
+                    }
+                    if (ImGui.Button("Fill Slot With Item (Host)"))
+                    {
+                        Utilities.HostFillSelectedSlot(Globals.hostRemoveSlot, Globals.selectedSpawnItem);
+                    }
+                    DrawToolTip("Places the chosen item into the selected slot of the selected player's inventory (host only).");
+
+                    ImGui.Separator();
+                    ImGui.Text("Character Actions (Host)");
+
+                    if (ImGui.Button("Pass Out Selected"))
+                    {
+                        Utilities.HostPassOutSelected();
+                    }
+                    DrawToolTip("Causes the selected player to pass out (host only).");
+
+                    if (ImGui.Button("Zombify Selected"))
+                    {
+                        Utilities.HostZombifySelected();
+                    }
+                    DrawToolTip("Turns the selected player into a zombie (host only).");
+
+                    ImGui.Separator();
+                    ImGui.Text("Backpack (Host)");
+
+                    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
+                    int invSlot = 0;
+                    ImGui.SliderInt("##host_inv_slot", ref invSlot, 0, 7, "Inventory Slot: %d");
+                    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
+                    int packSlot = 0;
+                    ImGui.SliderInt("##host_backpack_slot", ref packSlot, 0, 15, "Backpack Pocket: %d");
+
+                    if (ImGui.Button("Move Slot To Backpack (Host)"))
+                    {
+                        Utilities.HostAddToBackpackSelected(invSlot, packSlot);
+                    }
+                    DrawToolTip("Moves the item in the chosen inventory slot to the selected player's backpack (host only).");
+                }
+                // Profile
+                else if (selectedTab == 9)
                 {
                     ImGui.Indent(4.0f);
                     ImGui.Dummy(new System.Numerics.Vector2(4, 2));
 
-                    ImGui.Text("PeakMod V0.1 by TheLocalAdmin");
+                    if (ImGui.CollapsingHeader("Player Profile", ImGuiTreeNodeFlags.DefaultOpen))
+                    {
+                        ImGui.TextWrapped("Save or load all of your PLAYER tab options (self mods, statuses, fly/speed/jump settings). These options only affect YOUR character.");
+
+                        ImGui.Dummy(new System.Numerics.Vector2(4, 4));
+
+                        ImGui.PushStyleColor(ImGuiCol.Button, new System.Numerics.Vector4(0.20f, 0.45f, 0.25f, 1.0f));
+                        if (ImGui.Button("Save Current Player Profile"))
+                        {
+                            Utilities.SavePlayerProfile();
+                        }
+                        ImGui.PopStyleColor();
+                        DrawToolTip("Writes all PLAYER tab options to a profile file on disk.");
+
+                        if (ImGui.Button("Load Saved Player Profile"))
+                        {
+                            Utilities.LoadPlayerProfile();
+                        }
+                        DrawToolTip("Restores all PLAYER tab options from the saved profile and applies them.");
+
+                        ImGui.Dummy(new System.Numerics.Vector2(4, 4));
+                        ImGui.Separator();
+
+                        ImGui.TextWrapped("The profile is saved to: BepInEx/config/PeakModPlayerProfile.json\nOnly PLAYER tab options are stored - inventory, spawn, host and stage settings are not part of a profile.");
+                    }
+
+                    ImGui.Unindent();
+                }
+                // About
+                else if (selectedTab == 10)
+                {
+                    ImGui.Indent(4.0f);
+                    ImGui.Dummy(new System.Numerics.Vector2(4, 2));
+
+                    ImGui.Text("PeakMod V0.1.1 by TheLocalAdmin");
                     ImGui.Separator();
-                    ImGui.Text("Version: 0.1");
+                    ImGui.Text("Version: 0.1.1");
                     ImGui.Text("Author: TheLocalAdmin");
 
                     ImGui.Spacing();
@@ -910,6 +1229,8 @@ public class PeakMod : BaseUnityPlugin
                     ImGui.BulletText("Teleport to any mountain stage (Beach to Peak)");
                     ImGui.BulletText("Unlock all badges and grant ascent levels");
                     ImGui.BulletText("Player-to-player warp, revive, and kill tools");
+                    ImGui.BulletText("Spawn any item into any player's hand (works as non-host)");
+                    ImGui.BulletText("Host tab: kick, status-giving, slot editing, pass-out, zombify, backpack control");
                     ImGui.BulletText("Custom teleportation and ping-based movement");
                     ImGui.BulletText("Stylized Fullblack UI with tabbed interface");
 

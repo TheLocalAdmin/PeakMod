@@ -50,9 +50,21 @@ public static class Globals
     // Inventory
     public static List<Item> items = new List<Item>();
     public static List<string> itemNames = new List<string>();
+    public static List<string> itemPrefabNames = new List<string>();
     public static int[] selectedItems = new int[] { -1, -1, -1 };
     public static string[] itemDisplayNames = new string[] { "None", "None", "None" };
     public static string[] itemSearchBuffers = new string[3];
+
+    // Spawn tab
+    public static int selectedSpawnItem = -1;
+    public static string spawnItemSearch = "";
+
+    // Host tab
+    public static int selectedHostStatusIndex = -1;
+    public static float hostStatusAmount = 0.2f;
+    public static int hostRemoveSlot = 0;
+    public static List<int> hostStatusTypes = new List<int>();
+    public static List<string> hostStatusNames = new List<string>();
 
     // Player
     public static Player playerObj;
