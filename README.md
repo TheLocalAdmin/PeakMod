@@ -18,9 +18,9 @@ A feature-rich quality-of-life and utility mod for **PEAK** built on BepInEx + D
 4. Press **Z** to open the mod menu
 
 ### Manual Install
-1. Install [BepInEx 5.4.23.3](https://github.com/BepInEx/BepInEx/releases) (x64) into your PEAK game folder
+1. Install [BepInEx 5.4.23.3](https://github.com/BepInEx/BepInEx/releases) ([Thunderstore](https://thunderstore.io/c/peak/p/BepInEx/BepInExPack_PEAK/)) (x64) into your PEAK game folder
 2. Run the game once to generate the BepInEx folder structure
-3. Download [DearImGuiInjection](https://thunderstore.io/c/peak/p/penswer/DearImGuiInjection/) and copy `DearImGuiInjection.dll` into `BepInEx/plugins/`
+3. Download [DearImGuiInjection](https://github.com/Penswer/DearImGuiInjection) ([Thunderstore](https://thunderstore.io/c/peak/p/penswer/DearImGuiInjection/)) and copy `DearImGuiInjection.dll` into `BepInEx/plugins/`
 4. Copy `PeakMod.dll` into `BepInEx/plugins/`
 5. Launch the game and press **Z**
 
@@ -91,9 +91,9 @@ PeakMod/
 
 ## Credits
 
-- [Penswer](https://github.com/Penswer/DearImGuiInjection) — for insight, guidance, and DearImGuiInjection
-- [BepInEx](https://github.com/BepInEx/BepInEx) — for the modding framework
-- [DearImGuiInjection](https://thunderstore.io/c/peak/p/penswer/DearImGuiInjection/) — for seamless UI integration
+- [Penswer](https://github.com/Penswer/DearImGuiInjection) ([Thunderstore](https://thunderstore.io/c/peak/p/penswer/DearImGuiInjection/)) — for insight, guidance, and DearImGuiInjection
+- [BepInEx](https://github.com/BepInEx/BepInEx) ([Thunderstore](https://thunderstore.io/c/peak/p/BepInEx/BepInExPack_PEAK/)) — for the modding framework
+- [DearImGuiInjection](https://github.com/Penswer/DearImGuiInjection) ([Thunderstore](https://thunderstore.io/c/peak/p/penswer/DearImGuiInjection/)) — for seamless UI integration
 - [HarmonyX](https://github.com/pardeike/Harmony) — for runtime patching support
 
 ## License / Legal
