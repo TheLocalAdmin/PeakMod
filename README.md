@@ -1,27 +1,27 @@
-# PeakMod V0.2.0 (Beta)
+<p align="center">
+  <img src="icon.png" alt="PeakMod Logo" width="256" height="256" />
+</p>
 
-A feature-rich quality-of-life and utility mod for **PEAK** built on BepInEx + DearImGuiInjection.
+<h1 align="center">PeakMod V0.2.0</h1>
+
+<p align="center">
+  A feature-rich quality-of-life and utility mod for <b>PEAK</b> built on BepInEx + DearImGuiInjection.
+</p>
 
 > **Disclaimer:** This mod is provided **as-is** for fun and educational/personal use. It targets a specific build of PEAK and **will not always be updated** when features break or the game changes. Don't expect ongoing maintenance — contributions are welcome though!
 
-## Quick Install (Recommended)
+## Install
 
-### Via Thunderstore Mod Manager
+### Thunderstore (Recommended)
 1. Install [Thunderstore Mod Manager](https://get.thunderstore.io/) or [r2modman](https://thunderstore.io/c/peak/p/ebkr/r2modman/)
 2. Search for **PeakMod** in the PEAK community
 3. Click Download — BepInEx and DearImGuiInjection are installed automatically
 
-### Via GitHub Release (One Download)
-1. Download `PeakMod-Release.zip` from [Releases](https://github.com/TheLocalAdmin/PeakMod/releases)
-2. Extract the zip into your **PEAK game folder** (where `PEAK.exe` is located)
-3. Launch the game once to let BepInEx generate config files
-4. Press **Z** to open the mod menu
-
-### Manual Install
-1. Install [BepInEx 5.4.23.3](https://github.com/BepInEx/BepInEx/releases) ([Thunderstore](https://thunderstore.io/c/peak/p/BepInEx/BepInExPack_PEAK/)) (x64) into your PEAK game folder
+### GitHub (Manual)
+1. Install [BepInEx](https://github.com/BepInEx/BepInEx/releases) (x64) into your PEAK game folder
 2. Run the game once to generate the BepInEx folder structure
-3. Download [DearImGuiInjection](https://github.com/Penswer/DearImGuiInjection) ([Thunderstore](https://thunderstore.io/c/peak/p/penswer/DearImGuiInjection/)) and copy `DearImGuiInjection.dll` into `BepInEx/plugins/`
-4. Copy `PeakMod.dll` into `BepInEx/plugins/`
+3. Download [DearImGuiInjection](https://thunderstore.io/c/peak/p/penswer/DearImGuiInjection/) and copy `DearImGuiInjection.dll` into `BepInEx/plugins/`
+4. Download `PeakMod.dll` from [Releases](https://github.com/TheLocalAdmin/PeakMod/releases/tag/v0.2.0) and copy it into `BepInEx/plugins/`
 5. Launch the game and press **Z**
 
 ## Features
@@ -53,7 +53,7 @@ A feature-rich quality-of-life and utility mod for **PEAK** built on BepInEx + D
 3. Under `[Keybinds]`, change `CursorVisibility = Z` to your preferred key
 4. Save and launch
 
-## What's New in V0.2.0 (Beta)
+## What's New in V0.2.0
 
 - **Fixed:** No Ragdoll now only affects your character (was affecting all players)
 - **Fixed:** No Fog now only affects your view (was global for all players)
@@ -63,9 +63,8 @@ A feature-rich quality-of-life and utility mod for **PEAK** built on BepInEx + D
 - **New:** Team tab — apply self mods, give status effects, warp teammates
 - **New:** Luggage ESP with configurable glowing boxes (World tab)
 - **New:** Badge management — unlock all badges and ascent levels
-- **Removed:** Time freeze/override (was unstable)
 - **Improved:** Safe respawn with ground raycast detection
-- **Improved:** Simplified installation — single zip download or Thunderstore
+- **Improved:** Simplified installation — Thunderstore one-click or manual DLL drop
 
 ## Building from Source
 
@@ -85,6 +84,7 @@ PeakMod/
 ├── BepInEx/plugins/PeakMod.dll    ← prebuilt plugin, ready to install
 ├── PeakMod/                       ← full C# source (open source)
 ├── thunderstore/                  ← Thunderstore package files
+├── icon.png
 ├── README.md
 └── ...
 ```
@@ -93,7 +93,7 @@ PeakMod/
 
 - [Penswer](https://github.com/Penswer/DearImGuiInjection) ([Thunderstore](https://thunderstore.io/c/peak/p/penswer/DearImGuiInjection/)) — for insight, guidance, and DearImGuiInjection
 - [BepInEx](https://github.com/BepInEx/BepInEx) ([Thunderstore](https://thunderstore.io/c/peak/p/BepInEx/BepInExPack_PEAK/)) — for the modding framework
-- [DearImGuiInjection](https://github.com/Penswer/DearImGuiInjection) ([Thunderstore](https://thunderstore.io/c/peak/p/penswer/DearImGuiInjection/)) — for seamless UI integration
+- [DearImGuiInjection](https://thunderstore.io/c/peak/p/penswer/DearImGuiInjection/) — for seamless UI integration
 - [HarmonyX](https://github.com/pardeike/Harmony) — for runtime patching support
 
 ## License / Legal
