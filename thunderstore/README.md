@@ -1,4 +1,4 @@
-# PeakMod V0.2.0 (Beta)
+# PeakMod V0.3
 
 A feature-rich quality-of-life and utility mod for **PEAK** built on BepInEx + DearImGuiInjection.
 
@@ -25,17 +25,25 @@ A feature-rich quality-of-life and utility mod for **PEAK** built on BepInEx + D
 3. Click Download - BepInEx and DearImGuiInjection will be installed automatically
 
 ### Manual Install
-1. Install [BepInEx 5.4.23.3](https://github.com/BepInEx/BepInEx/releases) (x64) into your PEAK game folder
+1. Install [BepInEx](https://github.com/BepInEx/BepInEx/releases) ([Thunderstore](https://thunderstore.io/c/peak/p/BepInEx/BepInExPack_PEAK/)) (x64) into your PEAK game folder
 2. Run the game once to generate the BepInEx folder structure
 3. Download [DearImGuiInjection](https://thunderstore.io/c/peak/p/penswer/DearImGuiInjection/) and copy `DearImGuiInjection.dll` into `BepInEx/plugins/`
 4. Copy `PeakMod.dll` into `BepInEx/plugins/`
-5. Launch the game and press **Z**
+5. Launch the game and press **Fn + Insert** to open the menu
 
 ## Controls
 
-- **Z** - Open/close mod menu
+- **Fn + Insert** - Open/close mod menu
 - **M** - Toggle coordinate overlay
 - **V** - Toggle vanish mode (invisible + fly + coords)
+
+> **Note:** You must close the menu (press Fn + Insert again) before you can move your character.
+
+### Changing the Menu Key
+1. Close the game
+2. Open `BepInEx/config/iDeathHD.DearImGuiInjection.cfg`
+3. Under `[Keybinds]`, change `CursorVisibility = Insert` to your preferred key
+4. Save and launch
 
 ## Dependencies
 
@@ -44,15 +52,15 @@ A feature-rich quality-of-life and utility mod for **PEAK** built on BepInEx + D
 
 ## Links
 
-- [GitHub](https://github.com/TheLocalAdmin/PeakMod)
+- **[GitHub Repository](https://github.com/TheLocalAdmin/PeakMod)** — Source code, issues, and releases
 - [Bug Reports](https://github.com/TheLocalAdmin/PeakMod/issues)
 
 ## Credits
 
-- Penswer - for insight and guidance
-- BepInEx team - for the modding framework
-- DearImGuiInjection - for seamless UI integration
-- HarmonyX - for runtime patching support
+- [Penswer](https://github.com/Penswer/DearImGuiInjection) - for insight, guidance, and DearImGuiInjection
+- [BepInEx](https://github.com/BepInEx/BepInEx) - for the modding framework
+- [DearImGuiInjection](https://thunderstore.io/c/peak/p/penswer/DearImGuiInjection/) - for seamless UI integration
+- [HarmonyX](https://github.com/pardeike/Harmony) - for runtime patching support
 
 ## Disclaimer
 

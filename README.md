@@ -2,7 +2,7 @@
   <img src="icon.png" alt="PeakMod Logo" width="256" height="256" />
 </p>
 
-<h1 align="center">PeakMod V0.2.0</h1>
+<h1 align="center">PeakMod V0.3</h1>
 
 <p align="center">
   A feature-rich quality-of-life and utility mod for <b>PEAK</b> built on BepInEx + DearImGuiInjection.
@@ -22,7 +22,7 @@
 2. Run the game once to generate the BepInEx folder structure
 3. Download [DearImGuiInjection](https://thunderstore.io/c/peak/p/penswer/DearImGuiInjection/) and copy `DearImGuiInjection.dll` into `BepInEx/plugins/`
 4. Download `PeakMod.dll` from [Releases](https://github.com/TheLocalAdmin/PeakMod/releases/tag/v0.2.0) and copy it into `BepInEx/plugins/`
-5. Launch the game and press **Z**
+5. Launch the game and press **Fn + Insert** to open the menu
 
 ## Features
 
@@ -43,17 +43,19 @@
 
 | Key | Action |
 |-----|--------|
-| **Z** | Open/close mod menu |
+| **Fn + Insert** | Open/close mod menu |
 | **M** | Toggle coordinate overlay |
 | **V** | Toggle vanish mode (invisible + fly + coords) |
+
+> **Note:** You must close the menu (press Fn + Insert again) before you can move your character.
 
 ### Changing the Menu Key
 1. Close the game
 2. Open `BepInEx/config/iDeathHD.DearImGuiInjection.cfg`
-3. Under `[Keybinds]`, change `CursorVisibility = Z` to your preferred key
+3. Under `[Keybinds]`, change `CursorVisibility = Insert` to your preferred key
 4. Save and launch
 
-## What's New in V0.2.0
+## What's New in V0.3
 
 - **Fixed:** No Ragdoll now only affects your character (was affecting all players)
 - **Fixed:** No Fog now only affects your view (was global for all players)

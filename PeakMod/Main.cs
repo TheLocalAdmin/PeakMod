@@ -12,7 +12,7 @@ using Photon.Pun;
 using System.Collections.Generic;
 
 [BepInDependency(DearImGuiInjection.Metadata.GUID)]
-[BepInPlugin("com.thelocaladmin.peakmod", "PeakMod V0.2.0 by TheLocalAdmin", "0.2.0")]
+[BepInPlugin("com.thelocaladmin.peakmod", "PeakMod V0.3 by TheLocalAdmin", "0.3.0")]
 
 public class PeakMod : BaseUnityPlugin
 {
@@ -87,7 +87,7 @@ public class PeakMod : BaseUnityPlugin
     }
     private void Awake()
     {
-        Logger.LogInfo("PeakMod V0.2.0 by TheLocalAdmin - Mod Initialized");
+        Logger.LogInfo("PeakMod V0.3 by TheLocalAdmin - Mod Initialized");
         this.gameObject.AddComponent<EventComponent>();
     }
 
@@ -440,7 +440,7 @@ public class PeakMod : BaseUnityPlugin
             ImGui.SetNextWindowPos(new System.Numerics.Vector2(20, 20), ImGuiCond.Once);
             ImGui.SetNextWindowSize(new System.Numerics.Vector2(540, 340), ImGuiCond.Once);
 
-            if (ImGui.Begin("PeakMod V0.2.0 by TheLocalAdmin##Main", ImGuiWindowFlags.NoCollapse))
+            if (ImGui.Begin("PeakMod V0.3 by TheLocalAdmin##Main", ImGuiWindowFlags.NoCollapse))
             {
                 // Sidebar
                 ImGui.BeginChild("Sidebar", new System.Numerics.Vector2(90, 0), true);

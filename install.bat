@@ -41,7 +41,7 @@ if exist "BepInEx\plugins\PeakMod.dll" (
 
 echo.
 echo  Installation complete!
-echo  Launch PEAK and press Z to open the mod menu.
+echo  Launch PEAK and press Fn+Insert to open the mod menu.
 echo  Press M to toggle the coordinate overlay.
 echo.
 pause
