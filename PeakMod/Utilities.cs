@@ -227,9 +227,9 @@ public static class Utilities
         {
             foreach (var character in Character.AllCharacters)
             {
-                Vector3 revivePos = character.Ghost != null ? character.Ghost.transform.position : character.Head;
+                Vector3 revivePos = GetSafeRevivePosition(character);
                 character.photonView.RPC("RPCA_ReviveAtPosition", RpcTarget.All, new object[] {
-                    revivePos + new Vector3(0f, 4f, 0f), true, -1
+                    revivePos, true, -1
                 });
             }
             Logger.LogInfo("[PeakMod] Revive All triggered.");
@@ -276,9 +276,9 @@ public static class Utilities
             try
             {
                 var target = Globals.allPlayers[Globals.selectedPlayer];
-                Vector3 revivePos = target.Ghost != null ? target.Ghost.transform.position : target.Head;
+                Vector3 revivePos = GetSafeRevivePosition(target);
                 target.photonView.RPC("RPCA_ReviveAtPosition", RpcTarget.All, new object[] {
-                    revivePos + new Vector3(0f, 4f, 0f), true, -1
+                    revivePos, true, -1
                 });
                 Logger.LogInfo($"[PeakMod] Revive requested for player index {Globals.selectedPlayer}");
             }
@@ -553,6 +553,23 @@ public static class Utilities
                 ConfigManager.Logger.LogError("[PeakMod] GrantAscentLevel Exception: " + ex);
             }
         });
+    }
+
+    private static Vector3 GetSafeRevivePosition(Character character)
+    {
+        Vector3 basePos = character.Ghost != null ? character.Ghost.transform.position : character.Head;
+
+        if (Physics.Raycast(basePos + Vector3.up * 50f, Vector3.down, out RaycastHit hit, 200f, ~0))
+        {
+            return hit.point + Vector3.up * 1.5f;
+        }
+
+        if (Physics.Raycast(basePos + Vector3.up * 5f, Vector3.down, out RaycastHit hit2, 50f, ~0))
+        {
+            return hit2.point + Vector3.up * 1.5f;
+        }
+
+        return basePos + new Vector3(0f, 2f, 0f);
     }
 
     public static bool hasInitializedLuggageList = false;
@@ -1199,6 +1216,199 @@ public static class Utilities
             {
                 Logger.LogError("[PeakMod] ApplyLoadedPlayerSettings Exception: " + ex);
             }
+        });
+    }
+
+    public static void ApplyFlyModeToPlayer(int playerIndex)
+    {
+        if (playerIndex < 0 || playerIndex >= Globals.allPlayers.Count) return;
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                var target = Globals.allPlayers[playerIndex];
+                if (target == null) return;
+                FlyPatch.SetFlying(true);
+                Logger.LogInfo($"[PeakMod] Applied fly mode to {Globals.playerNames[playerIndex]}.");
+            }
+            catch (Exception ex) { Logger.LogError("[PeakMod] ApplyFlyModeToPlayer Exception: " + ex); }
+        });
+    }
+
+    public static void ApplySpeedToPlayer(int playerIndex)
+    {
+        if (playerIndex < 0 || playerIndex >= Globals.allPlayers.Count) return;
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                var target = Globals.allPlayers[playerIndex];
+                if (target == null) return;
+                var movement = target.GetComponent<CharacterMovement>();
+                if (movement != null)
+                {
+                    var field = ConstantFields.GetMovementModifierField();
+                    if (field != null)
+                    {
+                        float speed = ConfigManager.SpeedMod.Value ? ConfigManager.SpeedAmount.Value : 1f;
+                        field.SetValue(movement, speed);
+                        Logger.LogInfo($"[PeakMod] Applied speed {speed} to {Globals.playerNames[playerIndex]}.");
+                    }
+                }
+            }
+            catch (Exception ex) { Logger.LogError("[PeakMod] ApplySpeedToPlayer Exception: " + ex); }
+        });
+    }
+
+    public static void ApplyInfiniteStaminaToPlayer(int playerIndex)
+    {
+        if (playerIndex < 0 || playerIndex >= Globals.allPlayers.Count) return;
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                var target = Globals.allPlayers[playerIndex];
+                if (target == null) return;
+                var prop = ConstantFields.GetInfiniteStaminaProperty();
+                if (prop != null)
+                {
+                    prop.SetValue(target, true);
+                    Logger.LogInfo($"[PeakMod] Applied infinite stamina to {Globals.playerNames[playerIndex]}.");
+                }
+            }
+            catch (Exception ex) { Logger.LogError("[PeakMod] ApplyInfiniteStaminaToPlayer Exception: " + ex); }
+        });
+    }
+
+    public static void ApplyFreezeAfflictionsToPlayer(int playerIndex)
+    {
+        if (playerIndex < 0 || playerIndex >= Globals.allPlayers.Count) return;
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                var target = Globals.allPlayers[playerIndex];
+                if (target == null) return;
+                var prop = ConstantFields.GetStatusLockProperty();
+                if (prop != null)
+                {
+                    prop.SetValue(target, true);
+                    Logger.LogInfo($"[PeakMod] Applied freeze afflictions to {Globals.playerNames[playerIndex]}.");
+                }
+            }
+            catch (Exception ex) { Logger.LogError("[PeakMod] ApplyFreezeAfflictionsToPlayer Exception: " + ex); }
+        });
+    }
+
+    public static void ApplyNoWeightToPlayer(int playerIndex)
+    {
+        if (playerIndex < 0 || playerIndex >= Globals.allPlayers.Count) return;
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                var target = Globals.allPlayers[playerIndex];
+                if (target == null) return;
+                target.photonView.RPC("RPC_ApplyStatusesFromFloatArray", RpcTarget.All, new object[] { null });
+                Logger.LogInfo($"[PeakMod] Applied no weight to {Globals.playerNames[playerIndex]}.");
+            }
+            catch (Exception ex) { Logger.LogError("[PeakMod] ApplyNoWeightToPlayer Exception: " + ex); }
+        });
+    }
+
+    public static void ApplyJumpToPlayer(int playerIndex)
+    {
+        if (playerIndex < 0 || playerIndex >= Globals.allPlayers.Count) return;
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                var target = Globals.allPlayers[playerIndex];
+                if (target == null) return;
+                var movement = target.GetComponent<CharacterMovement>();
+                if (movement != null)
+                {
+                    var jumpField = ConstantFields.GetJumpGravityField();
+                    var fallField = ConstantFields.GetFallDamageTimeField();
+                    if (jumpField != null)
+                        jumpField.SetValue(movement, ConfigManager.JumpMod.Value ? ConfigManager.JumpAmount.Value : 10f);
+                    if (fallField != null)
+                        fallField.SetValue(movement, ConfigManager.NoFallDmg.Value ? 999f : 1.5f);
+                    Logger.LogInfo($"[PeakMod] Applied jump settings to {Globals.playerNames[playerIndex]}.");
+                }
+            }
+            catch (Exception ex) { Logger.LogError("[PeakMod] ApplyJumpToPlayer Exception: " + ex); }
+        });
+    }
+
+    public static void ApplyClimbToPlayer(int playerIndex)
+    {
+        if (playerIndex < 0 || playerIndex >= Globals.allPlayers.Count) return;
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                var target = Globals.allPlayers[playerIndex];
+                if (target == null) return;
+
+                var climb = target.GetComponent<CharacterClimbing>();
+                if (climb != null && ConfigManager.ClimbMod.Value)
+                {
+                    var field = ConstantFields.GetClimbSpeedModField();
+                    if (field != null) field.SetValue(climb, ConfigManager.ClimbAmount.Value);
+                }
+
+                var vine = target.GetComponent<CharacterVineClimbing>();
+                if (vine != null && ConfigManager.VineClimbMod.Value)
+                {
+                    var field = ConstantFields.GetVineClimbSpeedModField();
+                    if (field != null) field.SetValue(vine, ConfigManager.VineClimbAmount.Value);
+                }
+
+                var rope = target.GetComponent<CharacterRopeHandling>();
+                if (rope != null && ConfigManager.RopeClimbMod.Value)
+                {
+                    var field = ConstantFields.GetRopeClimbSpeedModField();
+                    if (field != null) field.SetValue(rope, ConfigManager.RopeClimbAmount.Value);
+                }
+
+                Logger.LogInfo($"[PeakMod] Applied climb settings to {Globals.playerNames[playerIndex]}.");
+            }
+            catch (Exception ex) { Logger.LogError("[PeakMod] ApplyClimbToPlayer Exception: " + ex); }
+        });
+    }
+
+    public static void ApplyAllStatusesToPlayer(int playerIndex)
+    {
+        if (playerIndex < 0 || playerIndex >= Globals.allPlayers.Count) return;
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                var target = Globals.allPlayers[playerIndex];
+                if (target == null) return;
+                var aff = target?.refs?.afflictions;
+                if (aff == null) return;
+
+                int count = Enum.GetValues(typeof(CharacterAfflictions.STATUSTYPE)).Length;
+                float[] statuses = new float[count];
+                for (int i = 0; i < count; i++)
+                    statuses[i] = aff.GetCurrentStatus((CharacterAfflictions.STATUSTYPE)i);
+
+                statuses[(int)CharacterAfflictions.STATUSTYPE.Hunger] = 0f;
+                statuses[(int)CharacterAfflictions.STATUSTYPE.Injury] = 0f;
+                statuses[(int)CharacterAfflictions.STATUSTYPE.Cold] = 0f;
+                statuses[(int)CharacterAfflictions.STATUSTYPE.Poison] = 0f;
+                statuses[(int)CharacterAfflictions.STATUSTYPE.Hot] = 0f;
+                statuses[(int)CharacterAfflictions.STATUSTYPE.Curse] = 0f;
+                statuses[(int)CharacterAfflictions.STATUSTYPE.Drowsy] = 0f;
+                statuses[(int)CharacterAfflictions.STATUSTYPE.Spores] = 0f;
+                statuses[(int)CharacterAfflictions.STATUSTYPE.Petrify] = 0f;
+
+                target.photonView.RPC("RPC_ApplyStatusesFromFloatArray", RpcTarget.All, new object[] { statuses });
+                Logger.LogInfo($"[PeakMod] Cleared all statuses on {Globals.playerNames[playerIndex]}.");
+            }
+            catch (Exception ex) { Logger.LogError("[PeakMod] ApplyAllStatusesToPlayer Exception: " + ex); }
         });
     }
 }

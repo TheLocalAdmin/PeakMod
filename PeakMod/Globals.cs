@@ -104,4 +104,19 @@ public static class Globals
     public static List<Luggage> luggageObject = new List<Luggage>();
     public static List<Luggage> allOpenedLuggage = new List<Luggage>();
 
+    // Coord Overlay
+    public static bool showCoordOverlay = false;
+
+    // Badge target player (for granting/removing badges on others)
+    public static int badgeTargetPlayer = -1;
+    public static int selectedBadgeForPlayer = -1;
+
+    // Team sub-tab
+    public static int teamSubTab = 0; // 0 = Self Mods, 1 = Team
+    public static int teamTargetPlayer = -1;
+    public static int teamStatusType = 0;
+    public static float teamStatusAmount = 0.2f;
+    public static List<int> teamStatusTypes = new List<int>();
+    public static List<string> teamStatusNames = new List<string>();
+
 }

@@ -1,0 +1,10 @@
+{
+    "name": "PeakMod",
+    "version_number": "0.2.0",
+    "website_url": "https://github.com/TheLocalAdmin/PeakMod",
+    "description": "Feature-rich QoL and utility mod: player mods, inventory tools, stage teleport, badge unlock, world ESP, lobby control, vanish mode, and team mods. Press Z to open menu.",
+    "dependencies": [
+        "BepInEx-BepInExPack_PEAK-5.4.2300",
+        "Penswer-DearImGuiInjection-1.0.0"
+    ]
+}

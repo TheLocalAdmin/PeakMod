@@ -45,6 +45,11 @@
 *.idb
 *.pdb
 
+# Build references (local game DLLs, not committed)
+PeakMod/References/
+PeakMod/bin/
+PeakMod/obj/
+
 # Kernel Module Compile Results
 *.mod*
 *.cmd

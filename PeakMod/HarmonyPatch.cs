@@ -151,8 +151,12 @@ public class Patch_NoRagdoll
     {
         if (ConfigManager.NoRagdoll.Value && !__instance.dead)
         {
-            __result = 1f;
-            return false;
+            var photonView = __instance.GetComponent<Character>()?.photonView;
+            if (photonView != null && photonView.IsMine)
+            {
+                __result = 1f;
+                return false;
+            }
         }
         return true;
     }
@@ -198,15 +202,11 @@ public class Patch_UnlimitedUsesSecondary
 [HarmonyPatch(typeof(Fog), "ApplyVisuals")]
 public class Patch_NoFog
 {
-    static bool Prefix(Fog __instance)
+    static void Postfix(Fog __instance)
     {
         if (ConfigManager.NoFog.Value)
         {
-            Shader.SetGlobalFloat(Shader.PropertyToID("FogHeight"), -10000f);
-            __instance.amount = 0f;
-            __instance.transform.localScale = Vector3.zero;
-            return false;
+            RenderSettings.fog = false;
         }
-        return true;
     }
 }

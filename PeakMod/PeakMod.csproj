@@ -91,6 +91,17 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>References\Zorro.Core.Runtime.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>References\UnityEngine.InputLegacyModule.dll</HintPath>
+    </Reference>
+    <Reference Include="Sirenix.Serialization, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>References\Sirenix.Serialization.dll</HintPath>
+    </Reference>
+    <Reference Include="netstandard">
+      <HintPath>References\netstandard.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConfigManager.cs" />
