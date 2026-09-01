@@ -90,7 +90,7 @@ ShowCoordOverlay = None
 
 Full reference: [Unity KeyCode docs](https://docs.unity3d.com/ScriptReference/KeyCode.html)
 
-## What's New in V0.3.1
+## What's New in V0.3.2
 
 - **Removed:** Vanish mode, No Fog, Team tab — streamlined to focus on core features
 - **New:** Coordinate overlay is now a checkbox in Self Mods (no fixed keybind)
