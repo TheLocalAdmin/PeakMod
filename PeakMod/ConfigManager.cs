@@ -28,7 +28,6 @@ public static class ConfigManager
 
     // Cheats
     public static ConfigEntry<bool> UnlimitedItemUses;
-    public static ConfigEntry<bool> NoFog;
 
     // Character Toggles
     public static ConfigEntry<bool> SpeedMod;
@@ -53,9 +52,6 @@ public static class ConfigManager
     // Teleport
     public static ConfigEntry<bool> TeleportToPing;
 
-    // Vanish
-    public static ConfigEntry<bool> VanishMode;
-
     // Markers
     public static ConfigEntry<bool> ShowPlayerMarkers;
 
@@ -65,6 +61,10 @@ public static class ConfigManager
 
     // Coord Overlay
     public static ConfigEntry<bool> ShowCoordOverlay;
+
+    // Custom Keybinds
+    public static ConfigEntry<KeyCode> FlyModKeybind;
+    public static ConfigEntry<KeyCode> ShowCoordOverlayKeybind;
 
     public static void Init(ConfigFile config, ManualLogSource logger)
     {
@@ -94,18 +94,18 @@ public static class ConfigManager
 
         // Cheats
         UnlimitedItemUses = config.Bind("Cheats", "UnlimitedItemUses", false, "Items never lose uses.");
-        NoFog = config.Bind("Cheats", "NoFog", false, "Removes the in-world fog.");
         ShowPlayerMarkers = config.Bind("Cheats", "ShowPlayerMarkers", true, "Shows on-screen markers with distance for every player.");
 
         // Luggage ESP
         LuggageESP = config.Bind("World", "LuggageESP", false, "Show glowing boxes around nearby luggage.");
         LuggageESPColor = config.Bind("World", "LuggageESPColor", "00FF00", "RGB hex color for luggage ESP boxes (e.g. 00FF00 = green).");
 
-        // Vanish
-        VanishMode = config.Bind("Cheats", "VanishMode", false, "Vanish mode - invisible, fly, and coords enabled.");
-
         // Coord Overlay
-        ShowCoordOverlay = config.Bind("UI", "ShowCoordOverlay", false, "Shows coordinate overlay (toggle with M key).");
+        ShowCoordOverlay = config.Bind("UI", "ShowCoordOverlay", false, "Shows coordinate overlay on screen.");
+
+        // Custom Keybinds
+        FlyModKeybind = config.Bind("Keybinds", "FlyModKeybind", KeyCode.None, "Custom key to toggle Fly Mode on/off.");
+        ShowCoordOverlayKeybind = config.Bind("Keybinds", "ShowCoordOverlayKeybind", KeyCode.None, "Custom key to toggle the coordinate overlay.");
 
         // Character Toggles
         SpeedMod = config.Bind("Character", "SpeedMod", false);

@@ -1026,7 +1026,6 @@ public static class Utilities
             AppendProfileFile(data, "InfiniteStamina", ConfigManager.InfiniteStamina.Value);
             AppendProfileFile(data, "LockStatus", ConfigManager.LockStatus.Value);
             AppendProfileFile(data, "NoWeight", ConfigManager.NoWeight.Value);
-            AppendProfileFile(data, "NoFog", ConfigManager.NoFog.Value);
             AppendProfileFile(data, "UnlimitedItemUses", ConfigManager.UnlimitedItemUses.Value);
             AppendProfileFile(data, "SpeedMod", ConfigManager.SpeedMod.Value);
             AppendProfileFile(data, "SpeedAmount", ConfigManager.SpeedAmount.Value);
@@ -1053,6 +1052,8 @@ public static class Utilities
             AppendProfileFile(data, "NoSpores", ConfigManager.NoSpores.Value);
             AppendProfileFile(data, "NoPetrify", ConfigManager.NoPetrify.Value);
             AppendProfileFile(data, "NoRagdoll", ConfigManager.NoRagdoll.Value);
+            AppendProfileKeybind(data, "FlyModKeybind", ConfigManager.FlyModKeybind.Value);
+            AppendProfileKeybind(data, "ShowCoordOverlayKeybind", ConfigManager.ShowCoordOverlayKeybind.Value);
 
             if (data.Length > 1 && data[data.Length - 1] == ',')
                 data.Length -= 1;
@@ -1096,7 +1097,6 @@ public static class Utilities
             ApplyProfileBool(map, "InfiniteStamina", ConfigManager.InfiniteStamina);
             ApplyProfileBool(map, "LockStatus", ConfigManager.LockStatus);
             ApplyProfileBool(map, "NoWeight", ConfigManager.NoWeight);
-            ApplyProfileBool(map, "NoFog", ConfigManager.NoFog);
             ApplyProfileBool(map, "UnlimitedItemUses", ConfigManager.UnlimitedItemUses);
             ApplyProfileBool(map, "SpeedMod", ConfigManager.SpeedMod);
             ApplyProfileFloat(map, "SpeedAmount", ConfigManager.SpeedAmount);
@@ -1123,6 +1123,8 @@ public static class Utilities
             ApplyProfileBool(map, "NoSpores", ConfigManager.NoSpores);
             ApplyProfileBool(map, "NoPetrify", ConfigManager.NoPetrify);
             ApplyProfileBool(map, "NoRagdoll", ConfigManager.NoRagdoll);
+            ApplyProfileKeybind(map, "FlyModKeybind", ConfigManager.FlyModKeybind);
+            ApplyProfileKeybind(map, "ShowCoordOverlayKeybind", ConfigManager.ShowCoordOverlayKeybind);
 
             Utilities.ApplyLoadedPlayerSettings();
             Logger.LogInfo("[PeakMod] Player profile loaded.");
@@ -1161,6 +1163,22 @@ public static class Utilities
         {
             float parsed;
             if (float.TryParse(raw, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out parsed))
+                entry.Value = parsed;
+        }
+    }
+
+    private static void AppendProfileKeybind(System.Text.StringBuilder sb, string key, UnityEngine.KeyCode value)
+    {
+        sb.Append("\"").Append(key).Append("\":\"").Append(value.ToString()).Append("\",");
+    }
+
+    private static void ApplyProfileKeybind(Dictionary<string, string> map, string key, BepInEx.Configuration.ConfigEntry<UnityEngine.KeyCode> entry)
+    {
+        string raw;
+        if (map.TryGetValue(key, out raw))
+        {
+            UnityEngine.KeyCode parsed;
+            if (System.Enum.TryParse<UnityEngine.KeyCode>(raw, out parsed))
                 entry.Value = parsed;
         }
     }

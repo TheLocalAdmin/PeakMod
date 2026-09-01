@@ -1,21 +1,20 @@
-# PeakMod V0.3
+# PeakMod V0.3.1
 
 A feature-rich quality-of-life and utility mod for **PEAK** built on BepInEx + DearImGuiInjection.
 
 ## Features
 
-- **Player Mods** - Infinite stamina, freeze afflictions, no-weight, no-fog (local only), unlimited item uses, no-status toggles, speed/jump/climb/vine/rope/fly modifiers, no fall damage, teleport to ping, custom teleportation.
+- **Player Mods** - Infinite stamina, freeze afflictions, no-weight, unlimited item uses, no-status toggles, speed/jump/climb/vine/rope/fly modifiers, no fall damage, teleport to ping.
 - **Inventory** - Real-time slot editing (assign any item), recharge item charges, searchable item list.
 - **Spawn** - Spawn any item into any player's hand (works as non-host).
-- **Lobby** - Player list, revive/kill, warp to/warp to me, spawn Scoutmaster (host only). Safe respawn with ground detection.
+- **Lobby** - Player list, revive/kill, warp to/warp to me, teleport players to custom coordinates, spawn Scoutmaster (host only). Safe respawn with ground detection.
 - **World** - Find and interact with nearby containers/luggage, open all nearby, warp to luggage, luggage ESP with configurable glowing boxes.
 - **Stages** - Teleport to any mountain stage (Beach to Peak).
 - **Achievements** - Unlock all badges and grant ascent levels.
 - **Host Only** - Kick, give any status, remove/fill inventory slots, pass out, zombify, backpack control.
-- **Team Tab** - Apply self mods (infinite stamina, freeze, speed, jump, climb, fly) to teammates, give status effects, clear all statuses, warp to/from teammate.
-- **Vanish Mode** - Press V to go invisible, enable fly, and show coordinate overlay.
-- **Coordinate Overlay** - Press M to show your position, all players with distance, and nearby containers.
-- **Profile** - Save/load all PLAYER tab options to a JSON file.
+- **Coordinate Overlay** - Toggle via checkbox or custom keybind to show your position, all players, and nearby containers.
+- **Custom Keybinds** - Assign keys for fly mode and coordinate overlay that save to your profile.
+- **Profile** - Save/load all PLAYER tab options including custom keybinds.
 
 ## Installation
 

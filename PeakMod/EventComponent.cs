@@ -47,81 +47,19 @@ public class EventComponent : MonoBehaviour
             ConstantFields.GetRopeClimbSpeedModField()?.SetValue(rope, ConfigManager.RopeClimbAmount.Value);
         }
 
-        HandleFog();
-        HandleCoordOverlay();
-        HandleVanishMode();
+        HandleCustomKeybinds();
     }
 
-    private bool wasFogEnabled = true;
-
-    private void HandleFog()
+    private void HandleCustomKeybinds()
     {
-        if (ConfigManager.NoFog.Value)
+        if (ConfigManager.FlyModKeybind.Value != KeyCode.None && Input.GetKeyDown(ConfigManager.FlyModKeybind.Value))
         {
-            if (RenderSettings.fog)
-            {
-                wasFogEnabled = true;
-                RenderSettings.fog = false;
-            }
-        }
-        else
-        {
-            if (wasFogEnabled && !RenderSettings.fog)
-            {
-                RenderSettings.fog = true;
-            }
-        }
-    }
-
-    private void HandleCoordOverlay()
-    {
-        if (Input.GetKeyDown(KeyCode.M))
-        {
-            Globals.showCoordOverlay = !Globals.showCoordOverlay;
-        }
-    }
-
-    private void HandleVanishMode()
-    {
-        if (Input.GetKeyDown(KeyCode.V))
-        {
-            ConfigManager.VanishMode.Value = !ConfigManager.VanishMode.Value;
+            ConfigManager.FlyMod.Value = !ConfigManager.FlyMod.Value;
         }
 
-        if (ConfigManager.VanishMode.Value)
+        if (ConfigManager.ShowCoordOverlayKeybind.Value != KeyCode.None && Input.GetKeyDown(ConfigManager.ShowCoordOverlayKeybind.Value))
         {
-            // Enable fly mode
-            if (!ConfigManager.FlyMod.Value)
-                ConfigManager.FlyMod.Value = true;
-
-            // Enable coord overlay
-            Globals.showCoordOverlay = true;
-
-            // Make invisible via renderer
-            var character = GameHelpers.GetCharacterComponent();
-            if (character != null)
-            {
-                var renderers = character.GetComponentsInChildren<Renderer>();
-                foreach (var r in renderers)
-                {
-                    if (r != null && r.enabled)
-                        r.enabled = false;
-                }
-            }
-        }
-        else
-        {
-            // Restore renderers when vanishing is turned off
-            var character = GameHelpers.GetCharacterComponent();
-            if (character != null)
-            {
-                var renderers = character.GetComponentsInChildren<Renderer>();
-                foreach (var r in renderers)
-                {
-                    if (r != null && !r.enabled)
-                        r.enabled = true;
-                }
-            }
+            ConfigManager.ShowCoordOverlay.Value = !ConfigManager.ShowCoordOverlay.Value;
         }
     }
 }

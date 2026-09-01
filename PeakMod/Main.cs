@@ -12,13 +12,22 @@ using Photon.Pun;
 using System.Collections.Generic;
 
 [BepInDependency(DearImGuiInjection.Metadata.GUID)]
-[BepInPlugin("com.thelocaladmin.peakmod", "PeakMod V0.3 by TheLocalAdmin", "0.3.0")]
+[BepInPlugin("com.thelocaladmin.peakmod", "PeakMod V0.3.1 by TheLocalAdmin", "0.3.1")]
 
 public class PeakMod : BaseUnityPlugin
 {
     // Menu
     private bool styleApplied = false;
     private int selectedTab = 1;
+
+    private static readonly string[] keybindOptions = new string[]
+    {
+        "None", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
+        "Alpha1", "Alpha2", "Alpha3", "Alpha4", "Alpha5", "Alpha6", "Alpha7", "Alpha8", "Alpha9", "Alpha0",
+        "Keypad0", "Keypad1", "Keypad2", "Keypad3", "Keypad4", "Keypad5", "Keypad6", "Keypad7", "Keypad8", "Keypad9",
+        "Insert", "Delete", "Home", "End", "PageUp", "PageDown",
+        "Mouse0", "Mouse1", "Mouse2", "Mouse3", "Mouse4", "Mouse5", "Mouse6"
+    };
 
     private void ApplyCustomStyle()
     {
@@ -87,7 +96,7 @@ public class PeakMod : BaseUnityPlugin
     }
     private void Awake()
     {
-        Logger.LogInfo("PeakMod V0.3 by TheLocalAdmin - Mod Initialized");
+        Logger.LogInfo("PeakMod V0.3.1 by TheLocalAdmin - Mod Initialized");
         this.gameObject.AddComponent<EventComponent>();
     }
 
@@ -176,11 +185,11 @@ public class PeakMod : BaseUnityPlugin
         }
     }
 
-    private void DrawCoordOverlay()
+        private void DrawCoordOverlay()
     {
         try
         {
-            if (!Globals.showCoordOverlay)
+            if (!ConfigManager.ShowCoordOverlay.Value)
                 return;
 
             Character local = Character.localCharacter;
@@ -440,7 +449,7 @@ public class PeakMod : BaseUnityPlugin
             ImGui.SetNextWindowPos(new System.Numerics.Vector2(20, 20), ImGuiCond.Once);
             ImGui.SetNextWindowSize(new System.Numerics.Vector2(540, 340), ImGuiCond.Once);
 
-            if (ImGui.Begin("PeakMod V0.3 by TheLocalAdmin##Main", ImGuiWindowFlags.NoCollapse))
+            if (ImGui.Begin("PeakMod V0.3.1 by TheLocalAdmin##Main", ImGuiWindowFlags.NoCollapse))
             {
                 // Sidebar
                 ImGui.BeginChild("Sidebar", new System.Numerics.Vector2(90, 0), true);
@@ -477,397 +486,205 @@ public class PeakMod : BaseUnityPlugin
                 // Player
                 if (selectedTab == 1)
                 {
-                    // Sub-tabs
-                    ImGui.Dummy(new System.Numerics.Vector2(4, 2));
-                    if (ImGui.Button("Self Mods##subtab0"))
-                        Globals.teamSubTab = 0;
-                    ImGui.SameLine();
-                    if (ImGui.Button("Team##subtab1"))
-                        Globals.teamSubTab = 1;
-                    ImGui.SameLine();
-                    ImGui.Dummy(new System.Numerics.Vector2(4, 2));
+                    // Self Mods - no more sub-tabs
+                    float fullWidth = ImGui.GetContentRegionAvail().X;
+                    float halfWidth = fullWidth / 2f;
 
-                    ImGui.Separator();
-
-                    if (Globals.teamSubTab == 0)
+                    ImGui.BeginChild("PlayerColumn", new System.Numerics.Vector2(halfWidth, 0), true);
+                    ImGui.Indent(4.0f);
+                    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
+                    ImGui.Dummy(new System.Numerics.Vector2(4, 2));
+                    if (ImGui.CollapsingHeader("Self Mods##SelfMods", ImGuiTreeNodeFlags.DefaultOpen))
                     {
-                        // Self Mods sub-tab
-                        float fullWidth = ImGui.GetContentRegionAvail().X;
-                        float halfWidth = fullWidth / 2f;
-
-                        ImGui.BeginChild("PlayerColumn", new System.Numerics.Vector2(halfWidth, 0), true);
-                        ImGui.Indent(4.0f);
-                        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
-                        ImGui.Dummy(new System.Numerics.Vector2(4, 2));
-                        if (ImGui.CollapsingHeader("Self Mods##SelfMods", ImGuiTreeNodeFlags.DefaultOpen))
+                        DrawCheckbox(ConfigManager.InfiniteStamina, "Infinite Stamina", (val) =>
                         {
-                            DrawCheckbox(ConfigManager.InfiniteStamina, "Infinite Stamina", (val) =>
-                            {
-                                var character = GameHelpers.GetCharacterComponent();
-                                var prop = ConstantFields.GetInfiniteStaminaProperty();
-                                if (character != null && prop != null)
-                                    prop.SetValue(character, val);
-                            });
-                            ImGui.SameLine();
-                            DrawToolTip("Prevents stamina from decreasing, allowing unlimited sprinting and actions.");
-
-                            DrawCheckbox(ConfigManager.LockStatus, "Freeze Afflictions", (val) =>
-                            {
-                                var character = GameHelpers.GetCharacterComponent();
-                                var prop = ConstantFields.GetStatusLockProperty();
-                                if (character != null && prop != null)
-                                    prop.SetValue(character, val);
-                            });
-                            ImGui.SameLine();
-                            DrawToolTip("Prevents your statuses from changing.");
-
-                            DrawCheckbox(ConfigManager.NoWeight, "No Weight");
-                            ImGui.SameLine();
-                            DrawToolTip("Disables weight penalties from carried items and backpack.");
-
-                            DrawCheckbox(ConfigManager.NoFog, "No Fog");
-                            ImGui.SameLine();
-                            DrawToolTip("Removes the in-world fog.");
-                            DrawCheckbox(ConfigManager.UnlimitedItemUses, "Unlimited Item Uses");
-                            ImGui.SameLine();
-                            DrawToolTip("Items never run out of uses.");
-
-                            DrawCheckbox(ConfigManager.SpeedMod, "Change Speed", (val) =>
-                            {
-                                var movement = GameHelpers.GetMovementComponent();
-                                var field = ConstantFields.GetMovementModifierField();
-                                if (movement != null && field != null)
-                                    field.SetValue(movement, ConfigManager.SpeedAmount.Value);
-                            });
-                            ImGui.SameLine();
-                            DrawToolTip("Overrides your character's movement speed with a custom multiplier.");
-
-                            DrawCheckbox(ConfigManager.JumpMod, "Change Jump", (val) =>
-                            {
-                                var movement = GameHelpers.GetMovementComponent();
-                                var jumpField = ConstantFields.GetJumpGravityField();
-                                var fallField = ConstantFields.GetFallDamageTimeField();
-                                if (movement != null && jumpField != null)
-                                    jumpField.SetValue(movement, ConfigManager.JumpAmount.Value);
-                                if (movement != null && fallField != null)
-                                    fallField.SetValue(movement, ConfigManager.NoFallDmg.Value ? 999f : 1.5f);
-                            });
-                            ImGui.SameLine();
-                            DrawToolTip("Modifies jump height, allowing higher or lower jumps depending on your settings.");
-
-                            DrawCheckbox(ConfigManager.ClimbMod, "Change Climb", (val) =>
-                            {
-                                var climb = GameHelpers.GetClimbingComponent();
-                                var field = ConstantFields.GetClimbSpeedModField();
-                                if (climb != null && field != null)
-                                    field.SetValue(climb, ConfigManager.ClimbAmount.Value);
-                            });
-                            ImGui.SameLine();
-                            DrawToolTip("Adjusts the speed at which you climb ladders and surfaces.");
-
-                            DrawCheckbox(ConfigManager.VineClimbMod, "Change Vine Climb", (val) =>
-                            {
-                                var vine = GameHelpers.GetVineClimbComponent();
-                                var field = ConstantFields.GetVineClimbSpeedModField();
-                                if (vine != null && field != null)
-                                    field.SetValue(vine, ConfigManager.VineClimbAmount.Value);
-                            });
-                            ImGui.SameLine();
-                            DrawToolTip("Changes climbing speed specifically for vines.");
-
-                            DrawCheckbox(ConfigManager.RopeClimbMod, "Change Rope Climb", (val) =>
-                            {
-                                var rope = GameHelpers.GetRopeClimbComponent();
-                                var field = ConstantFields.GetRopeClimbSpeedModField();
-                                if (rope != null && field != null)
-                                    field.SetValue(rope, ConfigManager.RopeClimbAmount.Value);
-                            });
-                            ImGui.SameLine();
-                            DrawToolTip("Modifies climbing speed when using ropes or rope-based obstacles.");
-
-                            DrawCheckbox(ConfigManager.TeleportToPing, "Teleport to Ping");
-                            ImGui.SameLine();
-                            DrawToolTip("Teleports your character to the pinged location on the map.");
-
-                            DrawCheckbox(ConfigManager.FlyMod, "Fly Mode", FlyPatch.SetFlying);
-                            ImGui.SameLine();
-                            DrawToolTip("Allows free movement in all directions while ignoring gravity.");
-
-                            DrawCheckbox(ConfigManager.ShowPlayerMarkers, "Show Player Markers");
-                            ImGui.SameLine();
-                            DrawToolTip("Draws markers with the name and distance of every nearby player on your screen.");
-                        }
-                        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
-                        if (ImGui.CollapsingHeader("Teleport##PlayerTeleport", ImGuiTreeNodeFlags.DefaultOpen))
-                        {
-                            ImGui.InputFloat("X", ref Globals.teleportX);
-                            ImGui.InputFloat("Y", ref Globals.teleportY);
-                            ImGui.InputFloat("Z", ref Globals.teleportZ);
-
-                            if (ImGui.Button("Teleport to coords"))
-                            {
-                                Logger.LogInfo($"[PeakMod] Requested to X:{Globals.teleportX} Y:{Globals.teleportY} Z:{Globals.teleportZ}");
-                                Utilities.TeleportToCoords(Globals.teleportX, Globals.teleportY, Globals.teleportZ);
-                            }
-                        }
-                        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
-                        if (ImGui.CollapsingHeader("Statuses##PlayerStatus", ImGuiTreeNodeFlags.DefaultOpen))
-                        {
-                            ImGui.Text("No Status:");
-                            DrawCheckbox(ConfigManager.NoEat, "No Eat");
-                            ImGui.SameLine();
-                            DrawToolTip("You never get hungry and don't need to eat.");
-                            DrawCheckbox(ConfigManager.NoInjury, "No Injury");
-                            DrawCheckbox(ConfigManager.NoCold, "No Cold");
-                            DrawCheckbox(ConfigManager.NoPoison, "No Poison");
-                            DrawCheckbox(ConfigManager.NoCurse, "No Curse");
-                            DrawCheckbox(ConfigManager.NoDrowsy, "No Drowsy");
-                            DrawCheckbox(ConfigManager.NoHot, "No Heat");
-                            DrawCheckbox(ConfigManager.NoSpores, "No Spores");
-                            DrawCheckbox(ConfigManager.NoPetrify, "No Petrify");
-                            DrawCheckbox(ConfigManager.NoRagdoll, "No Ragdoll");
-                            ImGui.SameLine();
-                            DrawToolTip("Prevents your character from falling over / going limp.");
-                        }
-                        ImGui.EndChild();
-                        ImGui.Unindent();
+                            var character = GameHelpers.GetCharacterComponent();
+                            var prop = ConstantFields.GetInfiniteStaminaProperty();
+                            if (character != null && prop != null)
+                                prop.SetValue(character, val);
+                        });
                         ImGui.SameLine();
-                        ImGui.BeginChild("PlayerDetailsColumn", new System.Numerics.Vector2(halfWidth - 10, 0), true);
-                        ImGui.Indent(4.0f);
-                        ImGui.Dummy(new System.Numerics.Vector2(4, 2));
-                        if (ImGui.CollapsingHeader("Details", ImGuiTreeNodeFlags.DefaultOpen))
+                        DrawToolTip("Prevents stamina from decreasing, allowing unlimited sprinting and actions.");
+
+                        DrawCheckbox(ConfigManager.LockStatus, "Freeze Afflictions", (val) =>
                         {
-                            if (ConfigManager.JumpMod.Value)
-                            {
-                                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
-                                DrawCheckbox(ConfigManager.NoFallDmg, "No Fall Dmg");
-                                DrawSliderFloat(ConfigManager.JumpAmount, "##jump_amt", 10.0f, 500.0f, "Jump Mult: %.2f");
-                            }
+                            var character = GameHelpers.GetCharacterComponent();
+                            var prop = ConstantFields.GetStatusLockProperty();
+                            if (character != null && prop != null)
+                                prop.SetValue(character, val);
+                        });
+                        ImGui.SameLine();
+                        DrawToolTip("Prevents your statuses from changing.");
 
-                            if (ConfigManager.SpeedMod.Value)
-                            {
-                                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
-                                DrawSliderFloat(ConfigManager.SpeedAmount, "##speed_amt", 1.0f, 20.0f, "Move Speed: %.2f");
-                            }
+                        DrawCheckbox(ConfigManager.NoWeight, "No Weight");
+                        ImGui.SameLine();
+                        DrawToolTip("Disables weight penalties from carried items and backpack.");
 
-                            if (ConfigManager.ClimbMod.Value)
-                            {
-                                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
-                                DrawSliderFloat(ConfigManager.ClimbAmount, "##climb_amt", 1.0f, 20.0f, "Climb Speed: %.2f");
-                            }
+                        DrawCheckbox(ConfigManager.UnlimitedItemUses, "Unlimited Item Uses");
+                        ImGui.SameLine();
+                        DrawToolTip("Items never run out of uses.");
 
-                            if (ConfigManager.VineClimbMod.Value)
-                            {
-                                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
-                                DrawSliderFloat(ConfigManager.VineClimbAmount, "##vine_climb_amt", 1.0f, 20.0f, "Vine Speed: %.2f");
-                            }
+                        DrawCheckbox(ConfigManager.SpeedMod, "Change Speed", (val) =>
+                        {
+                            var movement = GameHelpers.GetMovementComponent();
+                            var field = ConstantFields.GetMovementModifierField();
+                            if (movement != null && field != null)
+                                field.SetValue(movement, ConfigManager.SpeedAmount.Value);
+                        });
+                        ImGui.SameLine();
+                        DrawToolTip("Overrides your character's movement speed with a custom multiplier.");
 
-                            if (ConfigManager.RopeClimbMod.Value)
-                            {
-                                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
-                                DrawSliderFloat(ConfigManager.RopeClimbAmount, "##rope_climb_amt", 1.0f, 20.0f, "Rope Speed: %.2f");
-                            }
-                            if (ConfigManager.FlyMod.Value)
-                            {
-                                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
-                                DrawSliderFloat(ConfigManager.FlySpeed, "##fly_speed", 10f, 100f, "Fly Speed: %.2f");
-                                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
-                                DrawSliderFloat(ConfigManager.FlyAcceleration, "##fly_acceleration", 10f, 300f, "Fly Acceleration: %.2f");
-                            }
-                        }
-                        ImGui.Unindent();
-                        ImGui.EndChild();
+                        DrawCheckbox(ConfigManager.JumpMod, "Change Jump", (val) =>
+                        {
+                            var movement = GameHelpers.GetMovementComponent();
+                            var jumpField = ConstantFields.GetJumpGravityField();
+                            var fallField = ConstantFields.GetFallDamageTimeField();
+                            if (movement != null && jumpField != null)
+                                jumpField.SetValue(movement, ConfigManager.JumpAmount.Value);
+                            if (movement != null && fallField != null)
+                                fallField.SetValue(movement, ConfigManager.NoFallDmg.Value ? 999f : 1.5f);
+                        });
+                        ImGui.SameLine();
+                        DrawToolTip("Modifies jump height, allowing higher or lower jumps depending on your settings.");
+
+                        DrawCheckbox(ConfigManager.ClimbMod, "Change Climb", (val) =>
+                        {
+                            var climb = GameHelpers.GetClimbingComponent();
+                            var field = ConstantFields.GetClimbSpeedModField();
+                            if (climb != null && field != null)
+                                field.SetValue(climb, ConfigManager.ClimbAmount.Value);
+                        });
+                        ImGui.SameLine();
+                        DrawToolTip("Adjusts the speed at which you climb ladders and surfaces.");
+
+                        DrawCheckbox(ConfigManager.VineClimbMod, "Change Vine Climb", (val) =>
+                        {
+                            var vine = GameHelpers.GetVineClimbComponent();
+                            var field = ConstantFields.GetVineClimbSpeedModField();
+                            if (vine != null && field != null)
+                                field.SetValue(vine, ConfigManager.VineClimbAmount.Value);
+                        });
+                        ImGui.SameLine();
+                        DrawToolTip("Changes climbing speed specifically for vines.");
+
+                        DrawCheckbox(ConfigManager.RopeClimbMod, "Change Rope Climb", (val) =>
+                        {
+                            var rope = GameHelpers.GetRopeClimbComponent();
+                            var field = ConstantFields.GetRopeClimbSpeedModField();
+                            if (rope != null && field != null)
+                                field.SetValue(rope, ConfigManager.RopeClimbAmount.Value);
+                        });
+                        ImGui.SameLine();
+                        DrawToolTip("Modifies climbing speed when using ropes or rope-based obstacles.");
+
+                        DrawCheckbox(ConfigManager.TeleportToPing, "Teleport to Ping");
+                        ImGui.SameLine();
+                        DrawToolTip("Teleports your character to the pinged location on the map.");
+
+                        DrawCheckbox(ConfigManager.FlyMod, "Fly Mode", FlyPatch.SetFlying);
+                        ImGui.SameLine();
+                        DrawToolTip("Allows free movement in all directions while ignoring gravity.");
+
+                        DrawCheckbox(ConfigManager.ShowPlayerMarkers, "Show Player Markers");
+                        ImGui.SameLine();
+                        DrawToolTip("Draws markers with the name and distance of every nearby player on your screen.");
+
+                        DrawCheckbox(ConfigManager.ShowCoordOverlay, "Show Coordinates");
+                        ImGui.SameLine();
+                        DrawToolTip("Shows your coordinates and all nearby players/containers on screen.");
                     }
-                    else if (Globals.teamSubTab == 1)
+                    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
+                    if (ImGui.CollapsingHeader("Statuses##PlayerStatus", ImGuiTreeNodeFlags.DefaultOpen))
                     {
-                        // Team sub-tab
-                        float fullWidth = ImGui.GetContentRegionAvail().X;
-                        float halfWidth = fullWidth / 2f;
-
-                        if (Globals.allPlayers.Count == 0)
-                            Utilities.RefreshPlayerList();
-
-                        // Left: Player List
-                        ImGui.BeginChild("Team_PlayerList", new System.Numerics.Vector2(halfWidth, 0), true);
-                        ImGui.Indent(4.0f);
-                        ImGui.Dummy(new System.Numerics.Vector2(4, 2));
-
-                        if (ImGui.CollapsingHeader("Team##TeamPlayers", ImGuiTreeNodeFlags.DefaultOpen))
+                        ImGui.Text("No Status:");
+                        DrawCheckbox(ConfigManager.NoEat, "No Eat");
+                        ImGui.SameLine();
+                        DrawToolTip("You never get hungry and don't need to eat.");
+                        DrawCheckbox(ConfigManager.NoInjury, "No Injury");
+                        DrawCheckbox(ConfigManager.NoCold, "No Cold");
+                        DrawCheckbox(ConfigManager.NoPoison, "No Poison");
+                        DrawCheckbox(ConfigManager.NoCurse, "No Curse");
+                        DrawCheckbox(ConfigManager.NoDrowsy, "No Drowsy");
+                        DrawCheckbox(ConfigManager.NoHot, "No Heat");
+                        DrawCheckbox(ConfigManager.NoSpores, "No Spores");
+                        DrawCheckbox(ConfigManager.NoPetrify, "No Petrify");
+                        DrawCheckbox(ConfigManager.NoRagdoll, "No Ragdoll");
+                        ImGui.SameLine();
+                        DrawToolTip("Prevents your character from falling over / going limp.");
+                    }
+                    ImGui.EndChild();
+                    ImGui.Unindent();
+                    ImGui.SameLine();
+                    ImGui.BeginChild("PlayerDetailsColumn", new System.Numerics.Vector2(halfWidth - 10, 0), true);
+                    ImGui.Indent(4.0f);
+                    ImGui.Dummy(new System.Numerics.Vector2(4, 2));
+                    if (ImGui.CollapsingHeader("Details", ImGuiTreeNodeFlags.DefaultOpen))
+                    {
+                        if (ConfigManager.JumpMod.Value)
                         {
                             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
-                            if (ImGui.BeginCombo("Select Teammate", Globals.teamTargetPlayer >= 0 && Globals.teamTargetPlayer < Globals.playerNames.Count
-                                ? Globals.playerNames[Globals.teamTargetPlayer]
-                                : "None"))
-                            {
-                                for (int i = 0; i < Globals.playerNames.Count; i++)
-                                {
-                                    bool isSelected = (Globals.teamTargetPlayer == i);
-                                    if (ImGui.Selectable($"{Globals.playerNames[i]}##team_{i}", isSelected))
-                                    {
-                                        Globals.teamTargetPlayer = i;
-                                    }
-                                    if (isSelected)
-                                        ImGui.SetItemDefaultFocus();
-                                }
-                                ImGui.EndCombo();
-                            }
-                            ImGui.Dummy(new System.Numerics.Vector2(4, 2));
-
-                            ImGui.Separator();
-                            ImGui.Text("All Teammates");
-
-                            if (Globals.teamTargetPlayer >= 0 && Globals.teamTargetPlayer < Globals.allPlayers.Count)
-                            {
-                                Character target = Globals.allPlayers[Globals.teamTargetPlayer];
-                                ImGui.Text($"Selected: {Globals.playerNames[Globals.teamTargetPlayer]}");
-                            }
-                            else
-                            {
-                                ImGui.TextDisabled("No teammate selected.");
-                            }
+                            DrawCheckbox(ConfigManager.NoFallDmg, "No Fall Dmg");
+                            DrawSliderFloat(ConfigManager.JumpAmount, "##jump_amt", 10.0f, 500.0f, "Jump Mult: %.2f");
                         }
+
+                        if (ConfigManager.SpeedMod.Value)
+                        {
+                            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
+                            DrawSliderFloat(ConfigManager.SpeedAmount, "##speed_amt", 1.0f, 20.0f, "Move Speed: %.2f");
+                        }
+
+                        if (ConfigManager.ClimbMod.Value)
+                        {
+                            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
+                            DrawSliderFloat(ConfigManager.ClimbAmount, "##climb_amt", 1.0f, 20.0f, "Climb Speed: %.2f");
+                        }
+
+                        if (ConfigManager.VineClimbMod.Value)
+                        {
+                            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
+                            DrawSliderFloat(ConfigManager.VineClimbAmount, "##vine_climb_amt", 1.0f, 20.0f, "Vine Speed: %.2f");
+                        }
+
+                        if (ConfigManager.RopeClimbMod.Value)
+                        {
+                            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
+                            DrawSliderFloat(ConfigManager.RopeClimbAmount, "##rope_climb_amt", 1.0f, 20.0f, "Rope Speed: %.2f");
+                        }
+                        if (ConfigManager.FlyMod.Value)
+                        {
+                            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
+                            DrawSliderFloat(ConfigManager.FlySpeed, "##fly_speed", 10f, 100f, "Fly Speed: %.2f");
+                            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
+                            DrawSliderFloat(ConfigManager.FlyAcceleration, "##fly_acceleration", 10f, 300f, "Fly Acceleration: %.2f");
+                        }
+                    }
+                    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
+                    if (ImGui.CollapsingHeader("Custom Keybinds##Keybinds", ImGuiTreeNodeFlags.DefaultOpen))
+                    {
+                        ImGui.TextWrapped("Set a key to toggle features without opening the menu. Set to None to disable.");
 
                         ImGui.Dummy(new System.Numerics.Vector2(4, 2));
-                        if (ImGui.Button("Refresh Team List"))
-                            Utilities.RefreshPlayerList();
 
-                        ImGui.Unindent();
-                        ImGui.EndChild();
-
-                        // Right: Team Actions
+                        ImGui.Text("Fly Mode Key:");
                         ImGui.SameLine();
-                        ImGui.BeginChild("Team_Actions", new System.Numerics.Vector2(halfWidth - 10, 0), true);
-                        ImGui.Indent(4.0f);
-                        ImGui.Dummy(new System.Numerics.Vector2(0, 4));
-
-                        if (ImGui.CollapsingHeader("Team Actions##TeamActions", ImGuiTreeNodeFlags.DefaultOpen))
+                        int flyKey = (int)ConfigManager.FlyModKeybind.Value;
+                        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
+                        if (ImGui.Combo("##fly_key", ref flyKey, keybindOptions, keybindOptions.Length))
                         {
-                            if (Globals.teamTargetPlayer >= 0 && Globals.teamTargetPlayer < Globals.allPlayers.Count)
-                            {
-                                ImGui.Text($"Target: {Globals.playerNames[Globals.teamTargetPlayer]}");
-                                ImGui.Separator();
-
-                                // Teleport actions
-                                if (ImGui.Button("Warp To Teammate"))
-                                {
-                                    int oldSelected = Globals.selectedPlayer;
-                                    Globals.selectedPlayer = Globals.teamTargetPlayer;
-                                    Utilities.WarpToSelectedPlayer();
-                                    Globals.selectedPlayer = oldSelected;
-                                }
-
-                                ImGui.SameLine();
-                                if (ImGui.Button("Warp Teammate To Me"))
-                                {
-                                    int oldSelected = Globals.selectedPlayer;
-                                    Globals.selectedPlayer = Globals.teamTargetPlayer;
-                                    Utilities.WarpSelectedPlayerToMe();
-                                    Globals.selectedPlayer = oldSelected;
-                                }
-
-                                ImGui.Dummy(new System.Numerics.Vector2(4, 4));
-                                ImGui.Separator();
-                                ImGui.Text("Give Status to Teammate");
-
-                                if (Globals.teamStatusNames.Count == 0)
-                                    Utilities.RefreshHostStatuses();
-
-                                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
-                                if (ImGui.BeginCombo("Status Type##team", Globals.teamStatusType >= 0 && Globals.teamStatusType < Globals.teamStatusNames.Count
-                                    ? Globals.teamStatusNames[Globals.teamStatusType]
-                                    : "None"))
-                                {
-                                    for (int i = 0; i < Globals.teamStatusNames.Count; i++)
-                                    {
-                                        bool isSel = Globals.teamStatusType == i;
-                                        if (ImGui.Selectable($"{Globals.teamStatusNames[i]}##teamstatus_{i}", isSel))
-                                        {
-                                            Globals.teamStatusType = i;
-                                        }
-                                    }
-                                    ImGui.EndCombo();
-                                }
-
-                                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
-                                float amt = Globals.teamStatusAmount;
-                                if (ImGui.InputFloat("##team_status_amount", ref amt, 0.1f, 1f, "%.2f"))
-                                    Globals.teamStatusAmount = amt;
-                                ImGui.SameLine();
-                                DrawToolTip("Amount of the status to apply.");
-
-                                if (ImGui.Button("Give Status"))
-                                {
-                                    int oldSelected = Globals.selectedPlayer;
-                                    Globals.selectedPlayer = Globals.teamTargetPlayer;
-                                    if (Globals.teamStatusType >= 0 && Globals.teamStatusType < Globals.teamStatusTypes.Count)
-                                    {
-                                        Utilities.HostGiveStatusToSelected(
-                                            (CharacterAfflictions.STATUSTYPE)Globals.teamStatusTypes[Globals.teamStatusType],
-                                            Globals.teamStatusAmount);
-                                    }
-                                    Globals.selectedPlayer = oldSelected;
-                                }
-                                ImGui.SameLine();
-                                DrawToolTip("Applies the selected status effect to the teammate.");
-
-                                ImGui.Dummy(new System.Numerics.Vector2(4, 4));
-                                ImGui.Separator();
-                                ImGui.Text("Give Self Mods to Teammate");
-
-                                ImGui.Dummy(new System.Numerics.Vector2(4, 2));
-
-                                if (ImGui.Button("Infinite Stamina"))
-                                    Utilities.ApplyInfiniteStaminaToPlayer(Globals.teamTargetPlayer);
-                                ImGui.SameLine();
-                                if (ImGui.Button("Freeze Afflictions"))
-                                    Utilities.ApplyFreezeAfflictionsToPlayer(Globals.teamTargetPlayer);
-
-                                if (ImGui.Button("Speed"))
-                                    Utilities.ApplySpeedToPlayer(Globals.teamTargetPlayer);
-                                ImGui.SameLine();
-                                if (ImGui.Button("Jump"))
-                                    Utilities.ApplyJumpToPlayer(Globals.teamTargetPlayer);
-
-                                if (ImGui.Button("Fly Mode"))
-                                    Utilities.ApplyFlyModeToPlayer(Globals.teamTargetPlayer);
-                                ImGui.SameLine();
-                                if (ImGui.Button("Climb"))
-                                    Utilities.ApplyClimbToPlayer(Globals.teamTargetPlayer);
-
-                                if (ImGui.Button("Clear All Statuses"))
-                                    Utilities.ApplyAllStatusesToPlayer(Globals.teamTargetPlayer);
-
-                                ImGui.Dummy(new System.Numerics.Vector2(4, 4));
-                                ImGui.Separator();
-                                ImGui.Text("Team Utilities");
-
-                                if (ImGui.Button("Revive Teammate"))
-                                {
-                                    int oldSelected = Globals.selectedPlayer;
-                                    Globals.selectedPlayer = Globals.teamTargetPlayer;
-                                    Utilities.ReviveSelectedPlayer();
-                                    Globals.selectedPlayer = oldSelected;
-                                }
-
-                                ImGui.SameLine();
-                                if (ImGui.Button("Kill Teammate"))
-                                {
-                                    int oldSelected = Globals.selectedPlayer;
-                                    Globals.selectedPlayer = Globals.teamTargetPlayer;
-                                    Utilities.KillSelectedPlayer();
-                                    Globals.selectedPlayer = oldSelected;
-                                }
-                            }
-                            else
-                            {
-                                ImGui.Text("No teammate selected.");
-                                ImGui.TextWrapped("Select a teammate from the list on the left to see available actions.");
-                            }
+                            ConfigManager.FlyModKeybind.Value = (KeyCode)flyKey;
                         }
 
-                        ImGui.Unindent();
-                        ImGui.EndChild();
+                        ImGui.Text("Coords Overlay Key:");
+                        ImGui.SameLine();
+                        int coordKey = (int)ConfigManager.ShowCoordOverlayKeybind.Value;
+                        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
+                        if (ImGui.Combo("##coord_key", ref coordKey, keybindOptions, keybindOptions.Length))
+                        {
+                            ConfigManager.ShowCoordOverlayKeybind.Value = (KeyCode)coordKey;
+                        }
                     }
+                    ImGui.Unindent();
+                    ImGui.EndChild();
                 }
                 // Items
                 else if (selectedTab == 2)
@@ -1145,6 +962,41 @@ public class PeakMod : BaseUnityPlugin
                         else
                         {
                             ImGui.Text("No player selected.");
+                        }
+                    }
+
+                    ImGui.Dummy(new System.Numerics.Vector2(4, 2));
+                    ImGui.Separator();
+
+                    if (ImGui.CollapsingHeader("Teleport Player to Coords##TeleportToCoords", ImGuiTreeNodeFlags.DefaultOpen))
+                    {
+                        if (Globals.selectedPlayer >= 0 && Globals.selectedPlayer < Globals.allPlayers.Count)
+                        {
+                            ImGui.Text($"Target: {Globals.playerNames[Globals.selectedPlayer]}");
+
+                            ImGui.InputFloat("X", ref Globals.teleportX);
+                            ImGui.InputFloat("Y", ref Globals.teleportY);
+                            ImGui.InputFloat("Z", ref Globals.teleportZ);
+
+                            if (ImGui.Button("Teleport Selected Player to Coords"))
+                            {
+                                Logger.LogInfo($"[PeakMod] Teleporting {Globals.playerNames[Globals.selectedPlayer]} to X:{Globals.teleportX} Y:{Globals.teleportY} Z:{Globals.teleportZ}");
+                                int oldSelected = Globals.selectedPlayer;
+                                Utilities.TeleportToCoords(Globals.teleportX, Globals.teleportY, Globals.teleportZ);
+                            }
+                            ImGui.SameLine();
+                            DrawToolTip("Teleports the selected player to the specified coordinates. Use coordinates from the coordinate overlay.");
+
+                            if (ImGui.Button("Teleport Me to Coords"))
+                            {
+                                Logger.LogInfo($"[PeakMod] Self teleport to X:{Globals.teleportX} Y:{Globals.teleportY} Z:{Globals.teleportZ}");
+                                Utilities.TeleportToCoords(Globals.teleportX, Globals.teleportY, Globals.teleportZ);
+                            }
+                        }
+                        else
+                        {
+                            ImGui.Text("No player selected.");
+                            ImGui.TextWrapped("Select a player first to teleport them to specific coordinates.");
                         }
                     }
 
@@ -1599,13 +1451,13 @@ public class PeakMod : BaseUnityPlugin
                     ImGui.Indent(4.0f);
                     ImGui.Dummy(new System.Numerics.Vector2(4, 2));
 
-                    ImGui.Text("PeakMod V0.2.0 by TheLocalAdmin");
+                    ImGui.Text("PeakMod V0.3.1 by TheLocalAdmin");
                     ImGui.Separator();
-                    ImGui.Text("Version: 0.2.0");
+                    ImGui.Text("Version: 0.3.1");
                     ImGui.Text("Author: TheLocalAdmin");
 
                     ImGui.Spacing();
-                    ImGui.TextWrapped("A feature-rich quality-of-life and utility mod for PEAK: player enhancements, inventory tools, stage teleportation, badge unlocking, world manipulation, and lobby control in a clean Fullblack ImGui interface.");
+                    ImGui.TextWrapped("A feature-rich quality-of-life and utility mod for PEAK: player enhancements, inventory tools, stage teleportation, badge unlocking, world manipulation, and lobby control in a clean dark ImGui interface.");
 
                     ImGui.Spacing();
                     ImGui.Text("Key Features:");
@@ -1615,15 +1467,15 @@ public class PeakMod : BaseUnityPlugin
                     ImGui.BulletText("Teleport to any mountain stage (Beach to Peak)");
                     ImGui.BulletText("Unlock all badges and grant ascent levels");
                     ImGui.BulletText("Player-to-player warp, revive, and kill tools");
+                    ImGui.BulletText("Teleport players to custom coordinates (Lobby tab)");
                     ImGui.BulletText("Spawn any item into any player's hand (works as non-host)");
                     ImGui.BulletText("Host tab: kick, status-giving, slot editing, pass-out, zombify, backpack control");
-                    ImGui.BulletText("Custom teleportation and ping-based movement");
-                    ImGui.BulletText("Coordinate overlay (press M) showing all player and luggage positions");
+                    ImGui.BulletText("Coordinate overlay showing all players and luggage positions");
                     ImGui.BulletText("Badge management: unlock all badges and ascent levels");
-                    ImGui.BulletText("Vanish mode (press V): invisible, fly, and coordinate overlay");
-                    ImGui.BulletText("Team tab: apply self mods, give status, and teleport teammates");
                     ImGui.BulletText("Luggage ESP with configurable glowing boxes");
-                    ImGui.BulletText("Stylized Fullblack UI with tabbed interface");
+                    ImGui.BulletText("Custom keybinds for fly mode and coordinate overlay");
+                    ImGui.BulletText("Save/load player profiles with all settings");
+                    ImGui.BulletText("Stylized dark UI with tabbed interface");
 
                     ImGui.Spacing();
                     ImGui.Text("Special Thanks:");

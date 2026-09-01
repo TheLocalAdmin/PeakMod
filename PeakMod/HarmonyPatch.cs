@@ -198,15 +198,3 @@ public class Patch_UnlimitedUsesSecondary
         return true;
     }
 }
-
-[HarmonyPatch(typeof(Fog), "ApplyVisuals")]
-public class Patch_NoFog
-{
-    static void Postfix(Fog __instance)
-    {
-        if (ConfigManager.NoFog.Value)
-        {
-            RenderSettings.fog = false;
-        }
-    }
-}

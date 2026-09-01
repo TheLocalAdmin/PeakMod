@@ -2,7 +2,7 @@
   <img src="icon.png" alt="PeakMod Logo" width="256" height="256" />
 </p>
 
-<h1 align="center">PeakMod V0.3</h1>
+<h1 align="center">PeakMod V0.3.1</h1>
 
 <p align="center">
   A feature-rich quality-of-life and utility mod for <b>PEAK</b> built on BepInEx + DearImGuiInjection.
@@ -26,26 +26,24 @@
 
 ## Features
 
-- **Player Mods** — Infinite stamina, freeze afflictions, no-weight, no-fog (local only), unlimited item uses, no-status toggles (eat/injury/cold/poison/curse/hot/spores/petrify/ragdoll — all local only), speed/jump/climb/vine/rope/fly modifiers, no fall damage, teleport to ping, custom teleportation.
+- **Player Mods** — Infinite stamina, freeze afflictions, no-weight, unlimited item uses, no-status toggles (eat/injury/cold/poison/curse/hot/spores/petrify/ragdoll — all local only), speed/jump/climb/vine/rope/fly modifiers, no fall damage, teleport to ping.
 - **Inventory** — Real-time slot editing (assign any item), recharge item charges, searchable item list.
 - **Spawn** — Spawn any item into any player's hand (works as non-host via client-legal RPCs).
-- **Lobby** — Player list, revive/kill, warp to/warp to me, spawn Scoutmaster (host only). Safe respawn with ground detection (no more airport fly-ups!).
+- **Lobby** — Player list, revive/kill, warp to/warp to me, teleport players to custom coordinates, spawn Scoutmaster (host only). Safe respawn with ground detection (no more airport fly-ups!).
 - **World** — Find and interact with nearby containers/luggage, open all nearby, warp to luggage, luggage ESP with configurable glowing boxes.
 - **Stages** — Teleport to any mountain stage (Beach to Peak).
 - **Achievements** — Unlock all badges and grant ascent levels.
 - **Host Only** — Kick, give any status, remove/fill inventory slots, pass out, zombify, backpack control. Only works when you are the session host (MasterClient).
-- **Team Tab** — Apply self mods (infinite stamina, freeze, speed, jump, climb, fly) to teammates, give status effects, clear all statuses, warp to/from teammate.
-- **Vanish Mode** — Press V to go invisible, enable fly, and show coordinate overlay.
-- **Coordinate Overlay** — Press M to show your position, all players with distance, and nearby containers.
-- **Profile** — Save/load all PLAYER tab options to `BepInEx/config/PeakModPlayerProfile.json`.
+- **Coordinate Overlay** — Toggle via checkbox or custom keybind to show your position, all players with distance, and nearby containers.
+- **Custom Keybinds** — Assign keys for fly mode and coordinate overlay that save to your profile.
+- **Profile** — Save/load all PLAYER tab options including custom keybinds to `BepInEx/config/PeakModPlayerProfile.json`.
 
 ## Controls
 
 | Key | Action |
 |-----|--------|
 | **Fn + Insert** | Open/close mod menu |
-| **M** | Toggle coordinate overlay |
-| **V** | Toggle vanish mode (invisible + fly + coords) |
+| **Custom** | Fly mode toggle, coordinate overlay (set in PLAYER tab) |
 
 > **Note:** You must close the menu (press Fn + Insert again) before you can move your character.
 
@@ -55,18 +53,13 @@
 3. Under `[Keybinds]`, change `CursorVisibility = Insert` to your preferred key
 4. Save and launch
 
-## What's New in V0.3
+## What's New in V0.3.1
 
-- **Fixed:** No Ragdoll now only affects your character (was affecting all players)
-- **Fixed:** No Fog now only affects your view (was global for all players)
-- **Fixed:** Respawn at Airport no longer sends players thousands of blocks up
-- **New:** Coordinate overlay (press M) shows all player and luggage positions
-- **New:** Vanish mode (press V) — invisible, fly, and coords
-- **New:** Team tab — apply self mods, give status effects, warp teammates
-- **New:** Luggage ESP with configurable glowing boxes (World tab)
-- **New:** Badge management — unlock all badges and ascent levels
-- **Improved:** Safe respawn with ground raycast detection
-- **Improved:** Simplified installation — Thunderstore one-click or manual DLL drop
+- **Removed:** Vanish mode, No Fog, Team tab — streamlined to focus on core features
+- **New:** Coordinate overlay is now a checkbox in Self Mods (no fixed keybind)
+- **New:** Custom keybinds for fly mode and coordinate overlay (saves to profile)
+- **Moved:** Teleport-to-coordinates moved from Player to Lobby tab — teleport selected players to specific coordinates
+- **Updated:** About tab with current feature list
 
 ## Building from Source
 

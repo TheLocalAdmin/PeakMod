@@ -1,6 +1,6 @@
 {
     "name": "PeakMod",
-    "version_number": "0.3.0",
+    "version_number": "0.3.1",
     "website_url": "",
     "description": "Feature-rich QoL and utility mod: player mods, inventory tools, stage teleport, badge unlock, world ESP, lobby control, vanish mode, and team mods. Press Fn+Insert to open menu.",
     "dependencies": [
