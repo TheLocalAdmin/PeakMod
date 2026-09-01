@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using BepInEx.Configuration;
 
 public class EventComponent : MonoBehaviour
 {
@@ -47,19 +48,35 @@ public class EventComponent : MonoBehaviour
             ConstantFields.GetRopeClimbSpeedModField()?.SetValue(rope, ConfigManager.RopeClimbAmount.Value);
         }
 
-        HandleCustomKeybinds();
+        HandleKeybinds();
     }
 
-    private void HandleCustomKeybinds()
+    private void HandleKeybinds()
     {
-        if (ConfigManager.FlyModKeybind.Value != KeyCode.None && Input.GetKeyDown(ConfigManager.FlyModKeybind.Value))
-        {
-            ConfigManager.FlyMod.Value = !ConfigManager.FlyMod.Value;
-        }
+        ToggleKeybind(ConfigManager.KeybindInfiniteStamina, ConfigManager.InfiniteStamina);
+        ToggleKeybind(ConfigManager.KeybindFreezeAfflictions, ConfigManager.LockStatus);
+        ToggleKeybind(ConfigManager.KeybindNoWeight, ConfigManager.NoWeight);
+        ToggleKeybind(ConfigManager.KeybindUnlimitedItemUses, ConfigManager.UnlimitedItemUses);
+        ToggleKeybind(ConfigManager.KeybindSpeedMod, ConfigManager.SpeedMod);
+        ToggleKeybind(ConfigManager.KeybindJumpMod, ConfigManager.JumpMod);
+        ToggleKeybind(ConfigManager.KeybindClimbMod, ConfigManager.ClimbMod);
+        ToggleKeybind(ConfigManager.KeybindVineClimbMod, ConfigManager.VineClimbMod);
+        ToggleKeybind(ConfigManager.KeybindRopeClimbMod, ConfigManager.RopeClimbMod);
+        ToggleKeybind(ConfigManager.KeybindTeleportToPing, ConfigManager.TeleportToPing);
+        ToggleKeybind(ConfigManager.KeybindFlyMod, ConfigManager.FlyMod);
+        ToggleKeybind(ConfigManager.KeybindShowPlayerMarkers, ConfigManager.ShowPlayerMarkers);
+        ToggleKeybind(ConfigManager.KeybindShowCoordOverlay, ConfigManager.ShowCoordOverlay);
+    }
 
-        if (ConfigManager.ShowCoordOverlayKeybind.Value != KeyCode.None && Input.GetKeyDown(ConfigManager.ShowCoordOverlayKeybind.Value))
+    private void ToggleKeybind(ConfigEntry<string> keybind, ConfigEntry<bool> toggle)
+    {
+        if (string.IsNullOrEmpty(keybind.Value) || keybind.Value == "None")
+            return;
+
+        KeyCode key;
+        if (System.Enum.TryParse(keybind.Value, true, out key) && Input.GetKeyDown(key))
         {
-            ConfigManager.ShowCoordOverlay.Value = !ConfigManager.ShowCoordOverlay.Value;
+            toggle.Value = !toggle.Value;
         }
     }
 }

@@ -20,15 +20,6 @@ public class PeakMod : BaseUnityPlugin
     private bool styleApplied = false;
     private int selectedTab = 1;
 
-    private static readonly string[] keybindOptions = new string[]
-    {
-        "None", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
-        "Alpha1", "Alpha2", "Alpha3", "Alpha4", "Alpha5", "Alpha6", "Alpha7", "Alpha8", "Alpha9", "Alpha0",
-        "Keypad0", "Keypad1", "Keypad2", "Keypad3", "Keypad4", "Keypad5", "Keypad6", "Keypad7", "Keypad8", "Keypad9",
-        "Insert", "Delete", "Home", "End", "PageUp", "PageDown",
-        "Mouse0", "Mouse1", "Mouse2", "Mouse3", "Mouse4", "Mouse5", "Mouse6"
-    };
-
     private void ApplyCustomStyle()
     {
         var style = ImGui.GetStyle();
@@ -657,31 +648,13 @@ public class PeakMod : BaseUnityPlugin
                             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
                             DrawSliderFloat(ConfigManager.FlyAcceleration, "##fly_acceleration", 10f, 300f, "Fly Acceleration: %.2f");
                         }
-                    }
-                    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
-                    if (ImGui.CollapsingHeader("Custom Keybinds##Keybinds", ImGuiTreeNodeFlags.DefaultOpen))
-                    {
-                        ImGui.TextWrapped("Set a key to toggle features without opening the menu. Set to None to disable.");
 
+                        ImGui.Dummy(new System.Numerics.Vector2(4, 4));
+                        ImGui.Separator();
                         ImGui.Dummy(new System.Numerics.Vector2(4, 2));
-
-                        ImGui.Text("Fly Mode Key:");
-                        ImGui.SameLine();
-                        int flyKey = (int)ConfigManager.FlyModKeybind.Value;
-                        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
-                        if (ImGui.Combo("##fly_key", ref flyKey, keybindOptions, keybindOptions.Length))
-                        {
-                            ConfigManager.FlyModKeybind.Value = (KeyCode)flyKey;
-                        }
-
-                        ImGui.Text("Coords Overlay Key:");
-                        ImGui.SameLine();
-                        int coordKey = (int)ConfigManager.ShowCoordOverlayKeybind.Value;
-                        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
-                        if (ImGui.Combo("##coord_key", ref coordKey, keybindOptions, keybindOptions.Length))
-                        {
-                            ConfigManager.ShowCoordOverlayKeybind.Value = (KeyCode)coordKey;
-                        }
+                        ImGui.TextWrapped("Save your favorite settings in PROFILE tab.");
+                        ImGui.TextWrapped("Set custom keybinds in BepInEx/config/com.thelocaladmin.peakmod.cfg");
+                        ImGui.TextWrapped("Questions: See GitHub or Thunderstore for details.");
                     }
                     ImGui.Unindent();
                     ImGui.EndChild();

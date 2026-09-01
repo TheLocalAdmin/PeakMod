@@ -1052,8 +1052,19 @@ public static class Utilities
             AppendProfileFile(data, "NoSpores", ConfigManager.NoSpores.Value);
             AppendProfileFile(data, "NoPetrify", ConfigManager.NoPetrify.Value);
             AppendProfileFile(data, "NoRagdoll", ConfigManager.NoRagdoll.Value);
-            AppendProfileKeybind(data, "FlyModKeybind", ConfigManager.FlyModKeybind.Value);
-            AppendProfileKeybind(data, "ShowCoordOverlayKeybind", ConfigManager.ShowCoordOverlayKeybind.Value);
+            AppendProfileString(data, "KeybindInfiniteStamina", ConfigManager.KeybindInfiniteStamina.Value);
+            AppendProfileString(data, "KeybindFreezeAfflictions", ConfigManager.KeybindFreezeAfflictions.Value);
+            AppendProfileString(data, "KeybindNoWeight", ConfigManager.KeybindNoWeight.Value);
+            AppendProfileString(data, "KeybindUnlimitedItemUses", ConfigManager.KeybindUnlimitedItemUses.Value);
+            AppendProfileString(data, "KeybindSpeedMod", ConfigManager.KeybindSpeedMod.Value);
+            AppendProfileString(data, "KeybindJumpMod", ConfigManager.KeybindJumpMod.Value);
+            AppendProfileString(data, "KeybindClimbMod", ConfigManager.KeybindClimbMod.Value);
+            AppendProfileString(data, "KeybindVineClimbMod", ConfigManager.KeybindVineClimbMod.Value);
+            AppendProfileString(data, "KeybindRopeClimbMod", ConfigManager.KeybindRopeClimbMod.Value);
+            AppendProfileString(data, "KeybindTeleportToPing", ConfigManager.KeybindTeleportToPing.Value);
+            AppendProfileString(data, "KeybindFlyMod", ConfigManager.KeybindFlyMod.Value);
+            AppendProfileString(data, "KeybindShowPlayerMarkers", ConfigManager.KeybindShowPlayerMarkers.Value);
+            AppendProfileString(data, "KeybindShowCoordOverlay", ConfigManager.KeybindShowCoordOverlay.Value);
 
             if (data.Length > 1 && data[data.Length - 1] == ',')
                 data.Length -= 1;
@@ -1123,8 +1134,19 @@ public static class Utilities
             ApplyProfileBool(map, "NoSpores", ConfigManager.NoSpores);
             ApplyProfileBool(map, "NoPetrify", ConfigManager.NoPetrify);
             ApplyProfileBool(map, "NoRagdoll", ConfigManager.NoRagdoll);
-            ApplyProfileKeybind(map, "FlyModKeybind", ConfigManager.FlyModKeybind);
-            ApplyProfileKeybind(map, "ShowCoordOverlayKeybind", ConfigManager.ShowCoordOverlayKeybind);
+            ApplyProfileString(map, "KeybindInfiniteStamina", ConfigManager.KeybindInfiniteStamina);
+            ApplyProfileString(map, "KeybindFreezeAfflictions", ConfigManager.KeybindFreezeAfflictions);
+            ApplyProfileString(map, "KeybindNoWeight", ConfigManager.KeybindNoWeight);
+            ApplyProfileString(map, "KeybindUnlimitedItemUses", ConfigManager.KeybindUnlimitedItemUses);
+            ApplyProfileString(map, "KeybindSpeedMod", ConfigManager.KeybindSpeedMod);
+            ApplyProfileString(map, "KeybindJumpMod", ConfigManager.KeybindJumpMod);
+            ApplyProfileString(map, "KeybindClimbMod", ConfigManager.KeybindClimbMod);
+            ApplyProfileString(map, "KeybindVineClimbMod", ConfigManager.KeybindVineClimbMod);
+            ApplyProfileString(map, "KeybindRopeClimbMod", ConfigManager.KeybindRopeClimbMod);
+            ApplyProfileString(map, "KeybindTeleportToPing", ConfigManager.KeybindTeleportToPing);
+            ApplyProfileString(map, "KeybindFlyMod", ConfigManager.KeybindFlyMod);
+            ApplyProfileString(map, "KeybindShowPlayerMarkers", ConfigManager.KeybindShowPlayerMarkers);
+            ApplyProfileString(map, "KeybindShowCoordOverlay", ConfigManager.KeybindShowCoordOverlay);
 
             Utilities.ApplyLoadedPlayerSettings();
             Logger.LogInfo("[PeakMod] Player profile loaded.");
@@ -1167,19 +1189,17 @@ public static class Utilities
         }
     }
 
-    private static void AppendProfileKeybind(System.Text.StringBuilder sb, string key, UnityEngine.KeyCode value)
+    private static void AppendProfileString(System.Text.StringBuilder sb, string key, string value)
     {
-        sb.Append("\"").Append(key).Append("\":\"").Append(value.ToString()).Append("\",");
+        sb.Append("\"").Append(key).Append("\":\"").Append(value ?? "None").Append("\",");
     }
 
-    private static void ApplyProfileKeybind(Dictionary<string, string> map, string key, BepInEx.Configuration.ConfigEntry<UnityEngine.KeyCode> entry)
+    private static void ApplyProfileString(System.Collections.Generic.Dictionary<string, string> map, string key, BepInEx.Configuration.ConfigEntry<string> entry)
     {
         string raw;
         if (map.TryGetValue(key, out raw))
         {
-            UnityEngine.KeyCode parsed;
-            if (System.Enum.TryParse<UnityEngine.KeyCode>(raw, out parsed))
-                entry.Value = parsed;
+            entry.Value = raw;
         }
     }
 
@@ -1234,199 +1254,6 @@ public static class Utilities
             {
                 Logger.LogError("[PeakMod] ApplyLoadedPlayerSettings Exception: " + ex);
             }
-        });
-    }
-
-    public static void ApplyFlyModeToPlayer(int playerIndex)
-    {
-        if (playerIndex < 0 || playerIndex >= Globals.allPlayers.Count) return;
-        UnityMainThreadDispatcher.Enqueue(() =>
-        {
-            try
-            {
-                var target = Globals.allPlayers[playerIndex];
-                if (target == null) return;
-                FlyPatch.SetFlying(true);
-                Logger.LogInfo($"[PeakMod] Applied fly mode to {Globals.playerNames[playerIndex]}.");
-            }
-            catch (Exception ex) { Logger.LogError("[PeakMod] ApplyFlyModeToPlayer Exception: " + ex); }
-        });
-    }
-
-    public static void ApplySpeedToPlayer(int playerIndex)
-    {
-        if (playerIndex < 0 || playerIndex >= Globals.allPlayers.Count) return;
-        UnityMainThreadDispatcher.Enqueue(() =>
-        {
-            try
-            {
-                var target = Globals.allPlayers[playerIndex];
-                if (target == null) return;
-                var movement = target.GetComponent<CharacterMovement>();
-                if (movement != null)
-                {
-                    var field = ConstantFields.GetMovementModifierField();
-                    if (field != null)
-                    {
-                        float speed = ConfigManager.SpeedMod.Value ? ConfigManager.SpeedAmount.Value : 1f;
-                        field.SetValue(movement, speed);
-                        Logger.LogInfo($"[PeakMod] Applied speed {speed} to {Globals.playerNames[playerIndex]}.");
-                    }
-                }
-            }
-            catch (Exception ex) { Logger.LogError("[PeakMod] ApplySpeedToPlayer Exception: " + ex); }
-        });
-    }
-
-    public static void ApplyInfiniteStaminaToPlayer(int playerIndex)
-    {
-        if (playerIndex < 0 || playerIndex >= Globals.allPlayers.Count) return;
-        UnityMainThreadDispatcher.Enqueue(() =>
-        {
-            try
-            {
-                var target = Globals.allPlayers[playerIndex];
-                if (target == null) return;
-                var prop = ConstantFields.GetInfiniteStaminaProperty();
-                if (prop != null)
-                {
-                    prop.SetValue(target, true);
-                    Logger.LogInfo($"[PeakMod] Applied infinite stamina to {Globals.playerNames[playerIndex]}.");
-                }
-            }
-            catch (Exception ex) { Logger.LogError("[PeakMod] ApplyInfiniteStaminaToPlayer Exception: " + ex); }
-        });
-    }
-
-    public static void ApplyFreezeAfflictionsToPlayer(int playerIndex)
-    {
-        if (playerIndex < 0 || playerIndex >= Globals.allPlayers.Count) return;
-        UnityMainThreadDispatcher.Enqueue(() =>
-        {
-            try
-            {
-                var target = Globals.allPlayers[playerIndex];
-                if (target == null) return;
-                var prop = ConstantFields.GetStatusLockProperty();
-                if (prop != null)
-                {
-                    prop.SetValue(target, true);
-                    Logger.LogInfo($"[PeakMod] Applied freeze afflictions to {Globals.playerNames[playerIndex]}.");
-                }
-            }
-            catch (Exception ex) { Logger.LogError("[PeakMod] ApplyFreezeAfflictionsToPlayer Exception: " + ex); }
-        });
-    }
-
-    public static void ApplyNoWeightToPlayer(int playerIndex)
-    {
-        if (playerIndex < 0 || playerIndex >= Globals.allPlayers.Count) return;
-        UnityMainThreadDispatcher.Enqueue(() =>
-        {
-            try
-            {
-                var target = Globals.allPlayers[playerIndex];
-                if (target == null) return;
-                target.photonView.RPC("RPC_ApplyStatusesFromFloatArray", RpcTarget.All, new object[] { null });
-                Logger.LogInfo($"[PeakMod] Applied no weight to {Globals.playerNames[playerIndex]}.");
-            }
-            catch (Exception ex) { Logger.LogError("[PeakMod] ApplyNoWeightToPlayer Exception: " + ex); }
-        });
-    }
-
-    public static void ApplyJumpToPlayer(int playerIndex)
-    {
-        if (playerIndex < 0 || playerIndex >= Globals.allPlayers.Count) return;
-        UnityMainThreadDispatcher.Enqueue(() =>
-        {
-            try
-            {
-                var target = Globals.allPlayers[playerIndex];
-                if (target == null) return;
-                var movement = target.GetComponent<CharacterMovement>();
-                if (movement != null)
-                {
-                    var jumpField = ConstantFields.GetJumpGravityField();
-                    var fallField = ConstantFields.GetFallDamageTimeField();
-                    if (jumpField != null)
-                        jumpField.SetValue(movement, ConfigManager.JumpMod.Value ? ConfigManager.JumpAmount.Value : 10f);
-                    if (fallField != null)
-                        fallField.SetValue(movement, ConfigManager.NoFallDmg.Value ? 999f : 1.5f);
-                    Logger.LogInfo($"[PeakMod] Applied jump settings to {Globals.playerNames[playerIndex]}.");
-                }
-            }
-            catch (Exception ex) { Logger.LogError("[PeakMod] ApplyJumpToPlayer Exception: " + ex); }
-        });
-    }
-
-    public static void ApplyClimbToPlayer(int playerIndex)
-    {
-        if (playerIndex < 0 || playerIndex >= Globals.allPlayers.Count) return;
-        UnityMainThreadDispatcher.Enqueue(() =>
-        {
-            try
-            {
-                var target = Globals.allPlayers[playerIndex];
-                if (target == null) return;
-
-                var climb = target.GetComponent<CharacterClimbing>();
-                if (climb != null && ConfigManager.ClimbMod.Value)
-                {
-                    var field = ConstantFields.GetClimbSpeedModField();
-                    if (field != null) field.SetValue(climb, ConfigManager.ClimbAmount.Value);
-                }
-
-                var vine = target.GetComponent<CharacterVineClimbing>();
-                if (vine != null && ConfigManager.VineClimbMod.Value)
-                {
-                    var field = ConstantFields.GetVineClimbSpeedModField();
-                    if (field != null) field.SetValue(vine, ConfigManager.VineClimbAmount.Value);
-                }
-
-                var rope = target.GetComponent<CharacterRopeHandling>();
-                if (rope != null && ConfigManager.RopeClimbMod.Value)
-                {
-                    var field = ConstantFields.GetRopeClimbSpeedModField();
-                    if (field != null) field.SetValue(rope, ConfigManager.RopeClimbAmount.Value);
-                }
-
-                Logger.LogInfo($"[PeakMod] Applied climb settings to {Globals.playerNames[playerIndex]}.");
-            }
-            catch (Exception ex) { Logger.LogError("[PeakMod] ApplyClimbToPlayer Exception: " + ex); }
-        });
-    }
-
-    public static void ApplyAllStatusesToPlayer(int playerIndex)
-    {
-        if (playerIndex < 0 || playerIndex >= Globals.allPlayers.Count) return;
-        UnityMainThreadDispatcher.Enqueue(() =>
-        {
-            try
-            {
-                var target = Globals.allPlayers[playerIndex];
-                if (target == null) return;
-                var aff = target?.refs?.afflictions;
-                if (aff == null) return;
-
-                int count = Enum.GetValues(typeof(CharacterAfflictions.STATUSTYPE)).Length;
-                float[] statuses = new float[count];
-                for (int i = 0; i < count; i++)
-                    statuses[i] = aff.GetCurrentStatus((CharacterAfflictions.STATUSTYPE)i);
-
-                statuses[(int)CharacterAfflictions.STATUSTYPE.Hunger] = 0f;
-                statuses[(int)CharacterAfflictions.STATUSTYPE.Injury] = 0f;
-                statuses[(int)CharacterAfflictions.STATUSTYPE.Cold] = 0f;
-                statuses[(int)CharacterAfflictions.STATUSTYPE.Poison] = 0f;
-                statuses[(int)CharacterAfflictions.STATUSTYPE.Hot] = 0f;
-                statuses[(int)CharacterAfflictions.STATUSTYPE.Curse] = 0f;
-                statuses[(int)CharacterAfflictions.STATUSTYPE.Drowsy] = 0f;
-                statuses[(int)CharacterAfflictions.STATUSTYPE.Spores] = 0f;
-                statuses[(int)CharacterAfflictions.STATUSTYPE.Petrify] = 0f;
-
-                target.photonView.RPC("RPC_ApplyStatusesFromFloatArray", RpcTarget.All, new object[] { statuses });
-                Logger.LogInfo($"[PeakMod] Cleared all statuses on {Globals.playerNames[playerIndex]}.");
-            }
-            catch (Exception ex) { Logger.LogError("[PeakMod] ApplyAllStatusesToPlayer Exception: " + ex); }
         });
     }
 }

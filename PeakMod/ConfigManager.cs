@@ -62,9 +62,20 @@ public static class ConfigManager
     // Coord Overlay
     public static ConfigEntry<bool> ShowCoordOverlay;
 
-    // Custom Keybinds
-    public static ConfigEntry<KeyCode> FlyModKeybind;
-    public static ConfigEntry<KeyCode> ShowCoordOverlayKeybind;
+    // Keybinds (config-file only, stored as strings to avoid BepInEx enum spam)
+    public static ConfigEntry<string> KeybindInfiniteStamina;
+    public static ConfigEntry<string> KeybindFreezeAfflictions;
+    public static ConfigEntry<string> KeybindNoWeight;
+    public static ConfigEntry<string> KeybindUnlimitedItemUses;
+    public static ConfigEntry<string> KeybindSpeedMod;
+    public static ConfigEntry<string> KeybindJumpMod;
+    public static ConfigEntry<string> KeybindClimbMod;
+    public static ConfigEntry<string> KeybindVineClimbMod;
+    public static ConfigEntry<string> KeybindRopeClimbMod;
+    public static ConfigEntry<string> KeybindTeleportToPing;
+    public static ConfigEntry<string> KeybindFlyMod;
+    public static ConfigEntry<string> KeybindShowPlayerMarkers;
+    public static ConfigEntry<string> KeybindShowCoordOverlay;
 
     public static void Init(ConfigFile config, ManualLogSource logger)
     {
@@ -72,16 +83,16 @@ public static class ConfigManager
         Utilities.Logger = logger;
 
         // Cheats
-        InfiniteStamina = config.Bind("Cheats", "InfiniteStamina", false, "Enable infinite stamina");
-        TeleportToPing = config.Bind("Cheats", "TeleportToPing", false, "Automatically teleport to ping location");
-        FlyMod = config.Bind("Cheats", "Fly Mod", false, "Enables fly mode when checked.");
-        FlySpeed = config.Bind("Cheats", "Fly Speed", 100f, "Speed used when flying.");
-        FlyAcceleration = config.Bind("Cheats", "Fly Acceleration", 300f, "Acceleration used when flying.");
+        InfiniteStamina = config.Bind("Cheats", "InfiniteStamina", false);
+        TeleportToPing = config.Bind("Cheats", "TeleportToPing", false);
+        FlyMod = config.Bind("Cheats", "Fly Mod", false);
+        FlySpeed = config.Bind("Cheats", "Fly Speed", 100f);
+        FlyAcceleration = config.Bind("Cheats", "Fly Acceleration", 300f);
 
         // Afflictions
         LockStatus = config.Bind("Afflictions", "LockStatus", false);
         NoWeight = config.Bind("Afflictions", "NoWeight", false);
-        NoEat = config.Bind("Afflictions", "NoEat", false, "You don't have to eat - hunger never builds up.");
+        NoEat = config.Bind("Afflictions", "NoEat", false);
         NoInjury = config.Bind("Afflictions", "NoInjury", false);
         NoCold = config.Bind("Afflictions", "NoCold", false);
         NoPoison = config.Bind("Afflictions", "NoPoison", false);
@@ -90,22 +101,33 @@ public static class ConfigManager
         NoDrowsy = config.Bind("Afflictions", "NoDrowsy", false);
         NoSpores = config.Bind("Afflictions", "NoSpores", false);
         NoPetrify = config.Bind("Afflictions", "NoPetrify", false);
-        NoRagdoll = config.Bind("Afflictions", "NoRagdoll", false, "Prevents your character from falling over / going limp.");
+        NoRagdoll = config.Bind("Afflictions", "NoRagdoll", false);
 
         // Cheats
-        UnlimitedItemUses = config.Bind("Cheats", "UnlimitedItemUses", false, "Items never lose uses.");
-        ShowPlayerMarkers = config.Bind("Cheats", "ShowPlayerMarkers", true, "Shows on-screen markers with distance for every player.");
+        UnlimitedItemUses = config.Bind("Cheats", "UnlimitedItemUses", false);
+        ShowPlayerMarkers = config.Bind("Cheats", "ShowPlayerMarkers", true);
 
         // Luggage ESP
-        LuggageESP = config.Bind("World", "LuggageESP", false, "Show glowing boxes around nearby luggage.");
-        LuggageESPColor = config.Bind("World", "LuggageESPColor", "00FF00", "RGB hex color for luggage ESP boxes (e.g. 00FF00 = green).");
+        LuggageESP = config.Bind("World", "LuggageESP", false);
+        LuggageESPColor = config.Bind("World", "LuggageESPColor", "00FF00");
 
         // Coord Overlay
-        ShowCoordOverlay = config.Bind("UI", "ShowCoordOverlay", false, "Shows coordinate overlay on screen.");
+        ShowCoordOverlay = config.Bind("UI", "ShowCoordOverlay", false);
 
-        // Custom Keybinds
-        FlyModKeybind = config.Bind("Keybinds", "FlyModKeybind", KeyCode.None, "Custom key to toggle Fly Mode on/off.");
-        ShowCoordOverlayKeybind = config.Bind("Keybinds", "ShowCoordOverlayKeybind", KeyCode.None, "Custom key to toggle the coordinate overlay.");
+        // Keybinds — set a key name (e.g. F5, Alpha1, Keypad0) or None to disable
+        KeybindInfiniteStamina = config.Bind("Keybinds", "InfiniteStamina", "None");
+        KeybindFreezeAfflictions = config.Bind("Keybinds", "FreezeAfflictions", "None");
+        KeybindNoWeight = config.Bind("Keybinds", "NoWeight", "None");
+        KeybindUnlimitedItemUses = config.Bind("Keybinds", "UnlimitedItemUses", "None");
+        KeybindSpeedMod = config.Bind("Keybinds", "SpeedMod", "None");
+        KeybindJumpMod = config.Bind("Keybinds", "JumpMod", "None");
+        KeybindClimbMod = config.Bind("Keybinds", "ClimbMod", "None");
+        KeybindVineClimbMod = config.Bind("Keybinds", "VineClimbMod", "None");
+        KeybindRopeClimbMod = config.Bind("Keybinds", "RopeClimbMod", "None");
+        KeybindTeleportToPing = config.Bind("Keybinds", "TeleportToPing", "None");
+        KeybindFlyMod = config.Bind("Keybinds", "FlyMod", "None");
+        KeybindShowPlayerMarkers = config.Bind("Keybinds", "ShowPlayerMarkers", "None");
+        KeybindShowCoordOverlay = config.Bind("Keybinds", "ShowCoordOverlay", "None");
 
         // Character Toggles
         SpeedMod = config.Bind("Character", "SpeedMod", false);
@@ -122,10 +144,10 @@ public static class ConfigManager
         VineClimbAmount = config.Bind("Character", "VineClimbAmount", 1.0f);
         RopeClimbAmount = config.Bind("Character", "RopeClimbAmount", 1.0f);
 
-        // Inventory 
-        RechargeAmountSlot1 = config.Bind("Inventory", "RechargeAmountSlot1", 100f, new ConfigDescription("Recharge amount for slot 1", new AcceptableValueRange<float>(0f, 999f)));
-        RechargeAmountSlot2 = config.Bind("Inventory", "RechargeAmountSlot2", 100f, new ConfigDescription("Recharge amount for slot 2", new AcceptableValueRange<float>(0f, 999f)));
-        RechargeAmountSlot3 = config.Bind("Inventory", "RechargeAmountSlot3", 100f, new ConfigDescription("Recharge amount for slot 3", new AcceptableValueRange<float>(0f, 999f)));
+        // Inventory
+        RechargeAmountSlot1 = config.Bind("Inventory", "RechargeAmountSlot1", 100f);
+        RechargeAmountSlot2 = config.Bind("Inventory", "RechargeAmountSlot2", 100f);
+        RechargeAmountSlot3 = config.Bind("Inventory", "RechargeAmountSlot3", 100f);
 
         Logger.LogInfo("[PeakMod][ConfigManager] Config Loaded.");
     }

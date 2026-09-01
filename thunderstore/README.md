@@ -1,6 +1,6 @@
 # PeakMod V0.3.1
 
-A feature-rich quality-of-life and utility mod for **PEAK** built on BepInEx + DearImGuiInjection.
+A feature-rich quality-of-life and utility mod for **PEAK v2.3.a** built on BepInEx + DearImGuiInjection.
 
 ## Features
 
@@ -33,8 +33,7 @@ A feature-rich quality-of-life and utility mod for **PEAK** built on BepInEx + D
 ## Controls
 
 - **Fn + Insert** - Open/close mod menu
-- **M** - Toggle coordinate overlay
-- **V** - Toggle vanish mode (invisible + fly + coords)
+- **Custom** - Any self mod can be bound to a key (see Keybinds below)
 
 > **Note:** You must close the menu (press Fn + Insert again) before you can move your character.
 
@@ -44,6 +43,31 @@ A feature-rich quality-of-life and utility mod for **PEAK** built on BepInEx + D
 3. Under `[Keybinds]`, change `CursorVisibility = Insert` to your preferred key
 4. Save and launch
 
+### Custom Keybinds
+Keybinds are set in `BepInEx/config/com.thelocaladmin.peakmod.cfg` under `[Keybinds]`. Set any key name or `None` to disable.
+
+```ini
+[Keybinds]
+; set a key name (e.g. F5, Alpha1, Keypad0) or None to disable
+FlyMod = F5
+ShowCoordOverlay = None
+; ...etc for all self mods
+```
+
+**Key names (case-sensitive):**
+- **F keys:** `F1` through `F24`
+- **Number row:** `Alpha0` through `Alpha9`
+- **Numpad:** `Keypad0` through `Keypad9`, `KeypadPeriod`, `KeypadDivide`, `KeypadMultiply`, `KeypadMinus`, `KeypadPlus`, `KeypadEnter`, `KeypadEquals`
+- **Letters:** `A` through `Z` (uppercase)
+- **Navigation:** `Insert`, `Delete`, `Home`, `End`, `PageUp`, `PageDown`
+- **Arrows:** `UpArrow`, `DownArrow`, `LeftArrow`, `RightArrow`
+- **Mouse:** `Mouse0` through `Mouse6`
+- **Other:** `Space`, `Return`, `Escape`, `Tab`, `Backspace`, `Comma`, `Period`, `Slash`, `Backslash`, `Minus`, `Equals`, `LeftBracket`, `RightBracket`, `Semicolon`, `Quote`, `BackQuote`
+- **Modifiers:** `LeftShift`, `RightShift`, `LeftControl`, `RightControl`, `LeftAlt`, `RightAlt`
+- **Disable:** `None`
+
+Full list and guide: [GitHub Keybinds Reference](https://github.com/TheLocalAdmin/PeakMod#custom-keybinds)
+
 ## Dependencies
 
 - [BepInExPack PEAK](https://thunderstore.io/c/peak/p/BepInEx/BepInExPack_PEAK/) (installed automatically via Thunderstore)
@@ -51,7 +75,7 @@ A feature-rich quality-of-life and utility mod for **PEAK** built on BepInEx + D
 
 ## Links
 
-- **[GitHub Repository](https://github.com/TheLocalAdmin/PeakMod)** — Source code, issues, and releases
+- **[GitHub Repository](https://github.com/TheLocalAdmin/PeakMod)** — Source code, issues, releases, and full keybind docs
 - [Bug Reports](https://github.com/TheLocalAdmin/PeakMod/issues)
 
 ## Credits

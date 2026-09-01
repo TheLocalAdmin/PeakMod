@@ -8,6 +8,8 @@
   A feature-rich quality-of-life and utility mod for <b>PEAK</b> built on BepInEx + DearImGuiInjection.
 </p>
 
+> **PEAK Version:** 2.3.a
+
 > **Disclaimer:** This mod is provided **as-is** for fun and educational/personal use. It targets a specific build of PEAK and **will not always be updated** when features break or the game changes. Don't expect ongoing maintenance — contributions are welcome though!
 
 ## Install
@@ -43,7 +45,7 @@
 | Key | Action |
 |-----|--------|
 | **Fn + Insert** | Open/close mod menu |
-| **Custom** | Fly mode toggle, coordinate overlay (set in PLAYER tab) |
+| **Custom** | Any self mod can be bound to a key (see Keybinds below) |
 
 > **Note:** You must close the menu (press Fn + Insert again) before you can move your character.
 
@@ -52,6 +54,41 @@
 2. Open `BepInEx/config/iDeathHD.DearImGuiInjection.cfg`
 3. Under `[Keybinds]`, change `CursorVisibility = Insert` to your preferred key
 4. Save and launch
+
+### Custom Keybinds
+Keybinds are set in `BepInEx/config/com.thelocaladmin.peakmod.cfg` under `[Keybinds]`. Set any key name below or `None` to disable.
+
+```ini
+[Keybinds]
+; set a key name (e.g. F5, Alpha1, Keypad0) or None to disable
+InfiniteStamina = None
+FreezeAfflictions = None
+NoWeight = None
+UnlimitedItemUses = None
+SpeedMod = None
+JumpMod = None
+ClimbMod = None
+VineClimbMod = None
+RopeClimbMod = None
+TeleportToPing = None
+FlyMod = F5
+ShowPlayerMarkers = None
+ShowCoordOverlay = None
+```
+
+**Key names (case-sensitive):**
+- **F keys:** `F1`, `F2`, `F3`, `F4`, `F5`, `F6`, `F7`, `F8`, `F9`, `F10`, `F11`, `F12`, `F13`, `F14`, `F15`, `F16`, `F17`, `F18`, `F19`, `F20`, `F21`, `F22`, `F23`, `F24`
+- **Number row:** `Alpha0`, `Alpha1`, `Alpha2`, `Alpha3`, `Alpha4`, `Alpha5`, `Alpha6`, `Alpha7`, `Alpha8`, `Alpha9`
+- **Numpad:** `Keypad0`, `Keypad1`, `Keypad2`, `Keypad3`, `Keypad4`, `Keypad5`, `Keypad6`, `Keypad7`, `Keypad8`, `Keypad9`, `KeypadPeriod`, `KeypadDivide`, `KeypadMultiply`, `KeypadMinus`, `KeypadPlus`, `KeypadEnter`, `KeypadEquals`
+- **Letters:** `A` through `Z` (uppercase)
+- **Navigation:** `Insert`, `Delete`, `Home`, `End`, `PageUp`, `PageDown`
+- **Arrows:** `UpArrow`, `DownArrow`, `LeftArrow`, `RightArrow`
+- **Mouse:** `Mouse0`, `Mouse1`, `Mouse2`, `Mouse3`, `Mouse4`, `Mouse5`, `Mouse6`
+- **Other:** `Space`, `Return`, `Escape`, `Tab`, `Backspace`, `Delete`, `Comma`, `Period`, `Slash`, `Backslash`, `Minus`, `Equals`, `LeftBracket`, `RightBracket`, `Semicolon`, `Quote`, `BackQuote`
+- **Modifiers:** `LeftShift`, `RightShift`, `LeftControl`, `RightControl`, `LeftAlt`, `RightAlt`
+- **Disable:** `None`
+
+Full reference: [Unity KeyCode docs](https://docs.unity3d.com/ScriptReference/KeyCode.html)
 
 ## What's New in V0.3.1
 
