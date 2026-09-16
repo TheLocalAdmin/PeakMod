@@ -1,6 +1,6 @@
 # PeakMod V0.4.0
 
-A feature-rich quality-of-life and utility mod for **PEAK v2.4.a** built on BepInEx + DearImGuiInjection.
+A feature-rich quality-of-life and utility mod for **PEAK v2.3.a** built on BepInEx + DearImGuiInjection.
 
 ## Features
 

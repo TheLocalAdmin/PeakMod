@@ -8,7 +8,7 @@
   A feature-rich quality-of-life and utility mod for <b>PEAK</b> built on BepInEx + DearImGuiInjection.
 </p>
 
-> **PEAK Version:** 2.3.a
+> **PEAK Version:** 2.4.a
 
 > **Disclaimer:** This mod is provided **as-is** for fun and educational/personal use. It targets a specific build of PEAK and **will not always be updated** when features break or the game changes. Don't expect ongoing maintenance — contributions are welcome though!
 

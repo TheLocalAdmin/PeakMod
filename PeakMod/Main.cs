@@ -1470,7 +1470,7 @@ public class PeakMod : BaseUnityPlugin
                     ImGui.Text("Author: TheLocalAdmin");
 
                     ImGui.Spacing();
-                    ImGui.TextWrapped("A feature-rich quality-of-life and utility mod for PEAK: player enhancements, inventory tools, stage teleportation, badge unlocking, world manipulation, and lobby control in a clean dark ImGui interface.");
+                    ImGui.TextWrapped("A feature-rich quality-of-life and utility mod for PEAK v2.4.a: player enhancements, inventory tools, stage teleportation, badge unlocking, world manipulation, player effects, and lobby control in a clean dark ImGui interface.");
 
                     ImGui.Spacing();
                     ImGui.Text("Key Features:");
