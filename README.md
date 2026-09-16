@@ -2,7 +2,7 @@
   <img src="icon.png" alt="PeakMod Logo" width="256" height="256" />
 </p>
 
-<h1 align="center">PeakMod V0.3.1</h1>
+<h1 align="center">PeakMod V0.4.0</h1>
 
 <p align="center">
   A feature-rich quality-of-life and utility mod for <b>PEAK</b> built on BepInEx + DearImGuiInjection.
@@ -90,13 +90,17 @@ ShowCoordOverlay = None
 
 Full reference: [Unity KeyCode docs](https://docs.unity3d.com/ScriptReference/KeyCode.html)
 
-## What's New in V0.3.2
+## What's New in V0.4.0
 
-- **Removed:** Vanish mode, No Fog, Team tab — streamlined to focus on core features
-- **New:** Coordinate overlay is now a checkbox in Self Mods (no fixed keybind)
-- **New:** Custom keybinds for fly mode and coordinate overlay (saves to profile)
-- **Moved:** Teleport-to-coordinates moved from Player to Lobby tab — teleport selected players to specific coordinates
-- **Updated:** About tab with current feature list
+- **New:** Player effects — Trip, Knock Out, Wake Up, Stick/Unstick, Attack with Bees on targeted players
+- **New:** Self effects — Trip Self, Bees Self in Player tab
+- **New:** All-player actions — Kill All, Bees All, Warp All To Me with exclude-self toggle
+- **Improved:** Clean keybind config (string type, no more BepInEx acceptable-values spam)
+- **Improved:** Full keybind guide with all acceptable values listed in README
+- **Improved:** Profile/keybinds info now shown in Player Details tab
+- **Fixed:** Teleport-to-coords now correctly targets selected player (was always teleporting self)
+- **Fixed:** Lag reduced by caching parsed KeyCode values instead of re-parsing every frame
+- **Removed:** Eruption/Tornado hazard spawning (spawners only exist in specific stages)
 
 ## Building from Source
 

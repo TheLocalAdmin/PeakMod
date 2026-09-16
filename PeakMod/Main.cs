@@ -12,7 +12,7 @@ using Photon.Pun;
 using System.Collections.Generic;
 
 [BepInDependency(DearImGuiInjection.Metadata.GUID)]
-[BepInPlugin("com.thelocaladmin.peakmod", "PeakMod V0.3.1 by TheLocalAdmin", "0.3.1")]
+[BepInPlugin("com.thelocaladmin.peakmod", "PeakMod V0.4.0 by TheLocalAdmin", "0.4.0")]
 
 public class PeakMod : BaseUnityPlugin
 {
@@ -87,7 +87,7 @@ public class PeakMod : BaseUnityPlugin
     }
     private void Awake()
     {
-        Logger.LogInfo("PeakMod V0.3.1 by TheLocalAdmin - Mod Initialized");
+        Logger.LogInfo("PeakMod V0.4.0 by TheLocalAdmin - Mod Initialized");
         this.gameObject.AddComponent<EventComponent>();
     }
 
@@ -440,7 +440,7 @@ public class PeakMod : BaseUnityPlugin
             ImGui.SetNextWindowPos(new System.Numerics.Vector2(20, 20), ImGuiCond.Once);
             ImGui.SetNextWindowSize(new System.Numerics.Vector2(540, 340), ImGuiCond.Once);
 
-            if (ImGui.Begin("PeakMod V0.3.1 by TheLocalAdmin##Main", ImGuiWindowFlags.NoCollapse))
+            if (ImGui.Begin("PeakMod V0.4.0 by TheLocalAdmin##Main", ImGuiWindowFlags.NoCollapse))
             {
                 // Sidebar
                 ImGui.BeginChild("Sidebar", new System.Numerics.Vector2(90, 0), true);
@@ -648,6 +648,18 @@ public class PeakMod : BaseUnityPlugin
                             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 4);
                             DrawSliderFloat(ConfigManager.FlyAcceleration, "##fly_acceleration", 10f, 300f, "Fly Acceleration: %.2f");
                         }
+
+                        ImGui.Dummy(new System.Numerics.Vector2(4, 4));
+                        ImGui.Separator();
+                        ImGui.Dummy(new System.Numerics.Vector2(4, 2));
+                        ImGui.Text("Self Effects");
+
+                        if (ImGui.Button("Trip Self"))
+                            Utilities.TripSelf();
+
+                        ImGui.SameLine();
+                        if (ImGui.Button("Bees Self"))
+                            Utilities.AttackSelfWithBees();
 
                         ImGui.Dummy(new System.Numerics.Vector2(4, 4));
                         ImGui.Separator();
@@ -881,12 +893,16 @@ public class PeakMod : BaseUnityPlugin
                             Utilities.KillAllPlayers();
                         }
 
-                        bool excludeSelf = Globals.excludeSelfFromAllActions;
-                        if (ImGui.Checkbox("Exclude Self from Kill All##KillAll", ref excludeSelf))
-                            Globals.excludeSelfFromAllActions = excludeSelf;
+                        if (ImGui.Button("Bees All"))
+                            Utilities.BeesAll();
 
+                        ImGui.SameLine();
                         if (ImGui.Button("Warp All To Me"))
                             Utilities.WarpAllPlayersToMe();
+
+                        bool excludeSelf = Globals.excludeSelfFromAllActions;
+                        if (ImGui.Checkbox("Exclude Self from All Actions##AllActions", ref excludeSelf))
+                            Globals.excludeSelfFromAllActions = excludeSelf;
                     }
 
                     ImGui.Dummy(new System.Numerics.Vector2(4, 2));
@@ -923,6 +939,31 @@ public class PeakMod : BaseUnityPlugin
 
                             ImGui.Dummy(new System.Numerics.Vector2(4, 2));
                             ImGui.Separator();
+                            ImGui.Text("Player Effects");
+
+                            if (ImGui.Button("Trip"))
+                                Utilities.TripSelectedPlayer();
+
+                            ImGui.SameLine();
+                            if (ImGui.Button("Knock Out"))
+                                Utilities.PassOutSelectedPlayer();
+
+                            ImGui.SameLine();
+                            if (ImGui.Button("Wake Up"))
+                                Utilities.WakeUpSelectedPlayer();
+
+                            if (ImGui.Button("Stick (Freeze)"))
+                                Utilities.StickSelectedPlayer();
+
+                            ImGui.SameLine();
+                            if (ImGui.Button("Unstick"))
+                                Utilities.UnstickSelectedPlayer();
+
+                            if (ImGui.Button("Attack with Bees"))
+                                Utilities.AttackSelectedPlayerWithBees();
+
+                            ImGui.Dummy(new System.Numerics.Vector2(4, 2));
+                            ImGui.Separator();
                             ImGui.Text("Special Actions");
 
                             if (ImGui.Button("Spawn Scoutmaster"))
@@ -954,8 +995,7 @@ public class PeakMod : BaseUnityPlugin
                             if (ImGui.Button("Teleport Selected Player to Coords"))
                             {
                                 Logger.LogInfo($"[PeakMod] Teleporting {Globals.playerNames[Globals.selectedPlayer]} to X:{Globals.teleportX} Y:{Globals.teleportY} Z:{Globals.teleportZ}");
-                                int oldSelected = Globals.selectedPlayer;
-                                Utilities.TeleportToCoords(Globals.teleportX, Globals.teleportY, Globals.teleportZ);
+                                Utilities.TeleportSelectedPlayerToCoords(Globals.teleportX, Globals.teleportY, Globals.teleportZ);
                             }
                             ImGui.SameLine();
                             DrawToolTip("Teleports the selected player to the specified coordinates. Use coordinates from the coordinate overlay.");
@@ -1424,9 +1464,9 @@ public class PeakMod : BaseUnityPlugin
                     ImGui.Indent(4.0f);
                     ImGui.Dummy(new System.Numerics.Vector2(4, 2));
 
-                    ImGui.Text("PeakMod V0.3.1 by TheLocalAdmin");
+                    ImGui.Text("PeakMod V0.4.0 by TheLocalAdmin");
                     ImGui.Separator();
-                    ImGui.Text("Version: 0.3.1");
+                    ImGui.Text("Version: 0.4.0");
                     ImGui.Text("Author: TheLocalAdmin");
 
                     ImGui.Spacing();

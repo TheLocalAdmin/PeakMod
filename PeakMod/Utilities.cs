@@ -355,6 +355,170 @@ public static class Utilities
         });
     }
 
+    public static void TripPlayer(Character target)
+    {
+        if (target == null) return;
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                if (target.data.dead)
+                {
+                    Logger.LogWarning("[PeakMod] Cannot trip dead player.");
+                    return;
+                }
+                target.photonView.RPC("RPCA_Fall", RpcTarget.All, new object[] { 3f });
+                Logger.LogInfo($"[PeakMod] Trip requested for {target.characterName}");
+            }
+            catch (Exception ex) { Logger.LogError("[PeakMod] Trip Exception: " + ex); }
+        });
+    }
+
+    public static void TripSelectedPlayer()
+    {
+        if (Globals.selectedPlayer < 0 || Globals.selectedPlayer >= Globals.allPlayers.Count) return;
+        TripPlayer(Globals.allPlayers[Globals.selectedPlayer]);
+    }
+
+    public static void TripSelf()
+    {
+        TripPlayer(Character.localCharacter);
+    }
+
+    public static void AttackWithBees(Character target)
+    {
+        if (target == null) return;
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                var beeObj = Photon.Pun.PhotonNetwork.Instantiate("BeeSwarm", target.Head, Quaternion.identity);
+                if (beeObj != null)
+                {
+                    var beeComp = beeObj.GetComponent("BeeSwarm") as UnityEngine.MonoBehaviour;
+                    if (beeComp != null)
+                    {
+                        var beePV = beeComp.GetComponent<PhotonView>();
+                        if (beePV != null)
+                            beePV.RPC("SetBeesAngryRPC", RpcTarget.All, new object[] { true });
+                    }
+                }
+                Logger.LogInfo($"[PeakMod] Bees attack on {target.characterName}");
+            }
+            catch (Exception ex) { Logger.LogError("[PeakMod] Bees Exception: " + ex); }
+        });
+    }
+
+    public static void AttackSelectedPlayerWithBees()
+    {
+        if (Globals.selectedPlayer < 0 || Globals.selectedPlayer >= Globals.allPlayers.Count) return;
+        AttackWithBees(Globals.allPlayers[Globals.selectedPlayer]);
+    }
+
+    public static void AttackSelfWithBees()
+    {
+        AttackWithBees(Character.localCharacter);
+    }
+
+    public static void BeesAll()
+    {
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            foreach (var character in Character.AllCharacters)
+            {
+                if (character.IsLocal) continue;
+                AttackWithBees(character);
+            }
+            Logger.LogInfo("[PeakMod] Bees All triggered.");
+        });
+    }
+
+    public static void PassOutPlayer(Character target)
+    {
+        if (target == null) return;
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                target.photonView.RPC("RPCA_PassOut", RpcTarget.All, new object[0]);
+                Logger.LogInfo($"[PeakMod] Pass Out requested for {target.characterName}");
+            }
+            catch (Exception ex) { Logger.LogError("[PeakMod] PassOut Exception: " + ex); }
+        });
+    }
+
+    public static void PassOutSelectedPlayer()
+    {
+        if (Globals.selectedPlayer < 0 || Globals.selectedPlayer >= Globals.allPlayers.Count) return;
+        PassOutPlayer(Globals.allPlayers[Globals.selectedPlayer]);
+    }
+
+    public static void WakeUpPlayer(Character target)
+    {
+        if (target == null) return;
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                target.photonView.RPC("RPCA_UnPassOut", RpcTarget.All, new object[0]);
+                Logger.LogInfo($"[PeakMod] Wake Up requested for {target.characterName}");
+            }
+            catch (Exception ex) { Logger.LogError("[PeakMod] WakeUp Exception: " + ex); }
+        });
+    }
+
+    public static void WakeUpSelectedPlayer()
+    {
+        if (Globals.selectedPlayer < 0 || Globals.selectedPlayer >= Globals.allPlayers.Count) return;
+        WakeUpPlayer(Globals.allPlayers[Globals.selectedPlayer]);
+    }
+
+    public static void StickPlayer(Character target)
+    {
+        if (target == null) return;
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                target.photonView.RPC("RPCA_Stick", RpcTarget.All, new object[] {
+                    (int)BodypartType.Hip,
+                    target.transform.position,
+                    target.transform.position,
+                    (int)CharacterAfflictions.STATUSTYPE.Cold,
+                    0.1f
+                });
+                Logger.LogInfo($"[PeakMod] Stick requested for {target.characterName}");
+            }
+            catch (Exception ex) { Logger.LogError("[PeakMod] Stick Exception: " + ex); }
+        });
+    }
+
+    public static void StickSelectedPlayer()
+    {
+        if (Globals.selectedPlayer < 0 || Globals.selectedPlayer >= Globals.allPlayers.Count) return;
+        StickPlayer(Globals.allPlayers[Globals.selectedPlayer]);
+    }
+
+    public static void UnstickPlayer(Character target)
+    {
+        if (target == null) return;
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                target.photonView.RPC("RPCA_Unstick", RpcTarget.All, new object[0]);
+                Logger.LogInfo($"[PeakMod] Unstick requested for {target.characterName}");
+            }
+            catch (Exception ex) { Logger.LogError("[PeakMod] Unstick Exception: " + ex); }
+        });
+    }
+
+    public static void UnstickSelectedPlayer()
+    {
+        if (Globals.selectedPlayer < 0 || Globals.selectedPlayer >= Globals.allPlayers.Count) return;
+        UnstickPlayer(Globals.allPlayers[Globals.selectedPlayer]);
+    }
+
     public static void TeleportToCoords(float x, float y, float z)
     {
         UnityMainThreadDispatcher.Enqueue(() =>
@@ -379,6 +543,37 @@ public static class Utilities
                 });
 
                 ConfigManager.Logger.LogInfo($"[PeakMod] Teleported to {target}");
+            }
+            catch (Exception ex)
+            {
+                ConfigManager.Logger.LogError("[PeakMod] Teleport Exception: " + ex);
+            }
+        });
+    }
+
+    public static void TeleportSelectedPlayerToCoords(float x, float y, float z)
+    {
+        if (Globals.selectedPlayer < 0 || Globals.selectedPlayer >= Globals.allPlayers.Count)
+            return;
+
+        UnityMainThreadDispatcher.Enqueue(() =>
+        {
+            try
+            {
+                var target = Globals.allPlayers[Globals.selectedPlayer];
+                if (target == null || target.data.dead)
+                {
+                    Logger.LogWarning("[PeakMod] Target player is null or dead.");
+                    return;
+                }
+
+                Vector3 pos = new Vector3(x, y, z);
+                target.photonView.RPC("WarpPlayerRPC", RpcTarget.All, new object[]
+                {
+                pos, true
+                });
+
+                Logger.LogInfo($"[PeakMod] Teleported {Globals.playerNames[Globals.selectedPlayer]} to {pos}");
             }
             catch (Exception ex)
             {
